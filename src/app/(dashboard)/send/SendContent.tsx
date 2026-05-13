@@ -11,16 +11,16 @@ import { getIntegrations } from "@/services/integration.service";
 import { toast } from "sonner";
 
 interface User {
-  id: string;
+  _id: string;
   name: string;
   phone: string;
   role: string;
-  companyName: string;
+  company: string;
   logo: string;
 }
 
 interface Template {
-  id: string;
+  _id: string;
   name: string;
   image: string;
 }
@@ -69,14 +69,18 @@ export default function SendContent() {
           : videoRes?.data || [];
 
         const vid = videoList.find(
-  (v: any) => String(v.id) === String(videoTemplateId)
-);
+          (v: any) => String(v._id || v.id) === String(videoTemplateId),
+        );
+
+        console.log("videoList", videoList);
+        console.log("videoTemplateId", videoTemplateId);
+        console.log("matched video", vid);
 
         if (vid) {
           setVideoTemplate({
-            id: vid.id,
+            _id: vid._id || vid.id,
             name: vid.name,
-            video: vid.video || `/templates/${vid.filename}`,
+            video: vid.previewUrl,
           });
         }
       }
@@ -84,8 +88,8 @@ export default function SendContent() {
       // 🖼 IMAGE
       if (templateId) {
         const tmpl = imageRes.data.find(
-  (t: any) => String(t.id) === String(templateId)
-);
+          (t: any) => String(t.id) === String(templateId),
+        );
         setTemplate(tmpl);
       }
     } catch (err) {
@@ -149,10 +153,7 @@ export default function SendContent() {
   const isSent = message.startsWith("Delivered");
 
   return (
-    <div
-      className="p-2 bg-[#F4F5F7] min-h-screen"
-      style={{ fontFamily: "'Sora', sans-serif" }}
-    >
+    <div className="bg-[#F4F5F7] min-h-screen font-sora">
       {/* HEADER  */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2 text-sm">
@@ -230,13 +231,19 @@ export default function SendContent() {
             {/* VIDEO */}
             {videoTemplateId ? (
               videoTemplate?.video ? (
-                <video
-                  src={`${process.env.NEXT_PUBLIC_API_URL}${videoTemplate.video}`}
-                  className="w-full h-full object-contain"
-                  controls
-                  autoPlay
-                  loop
-                  muted
+                // <video
+                //   src={`${videoTemplate.video}`}
+                //   className="w-full h-full object-contain"
+                //   controls
+                //   autoPlay
+                //   loop
+                //   muted
+                // />
+                <iframe
+                  src={videoTemplate.video}
+                  className="w-full h-full rounded-xl"
+                  allow="autoplay"
+                  allowFullScreen
                 />
               ) : (
                 <p className="text-gray-400">No video preview</p>
@@ -244,7 +251,8 @@ export default function SendContent() {
             ) : /* IMAGE */
             template?.image ? (
               <img
-                src={`${process.env.NEXT_PUBLIC_API_URL}${template.image}`}
+                src={`${template.image}`}
+                referrerPolicy="no-referrer"
                 className="w-full h-full object-contain"
                 alt="Template"
               />
@@ -452,62 +460,61 @@ export default function SendContent() {
         )}
       </div>
       {showConfirm && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
+            {/* Header */}
+            <h2 className="text-lg font-semibold text-gray-900">
+              Confirm Campaign
+            </h2>
 
-      {/* Header */}
-      <h2 className="text-lg font-semibold text-gray-900">
-        Confirm Campaign
-      </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              This action cannot be undone
+            </p>
 
-      <p className="text-sm text-gray-500 mt-1">
-        This action cannot be undone
-      </p>
+            {/* Info */}
+            <div className="mt-4 space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Recipients</span>
+                <span className="font-medium">{users.length}</span>
+              </div>
 
-      {/* Info */}
-      <div className="mt-4 space-y-3 text-sm">
-        <div className="flex justify-between">
-          <span className="text-gray-500">Recipients</span>
-          <span className="font-medium">{users.length}</span>
-        </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Platform</span>
+                <span className="font-medium capitalize">{platform}</span>
+              </div>
 
-        <div className="flex justify-between">
-          <span className="text-gray-500">Platform</span>
-          <span className="font-medium capitalize">{platform}</span>
-        </div>
-
-        {/* <div className="flex justify-between">
+              {/* <div className="flex justify-between">
           <span className="text-gray-500">Template</span>
           <span className="font-medium">
             {template?.name || videoTemplate?.name || "N/A"}
           </span>
         </div> */}
-      </div>
+            </div>
 
-      {/* Warning */}
-      <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
-        Messages will be sent immediately to all users.
-      </div>
+            {/* Warning */}
+            <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
+              Messages will be sent immediately to all users.
+            </div>
 
-      {/* Actions */}
-      <div className="flex justify-end gap-3 mt-6">
-        <button
-          onClick={() => setShowConfirm(false)}
-          className="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100"
-        >
-          Cancel
-        </button>
+            {/* Actions */}
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100"
+              >
+                Cancel
+              </button>
 
-        <button
-          onClick={confirmSend}
-          className="px-4 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800"
-        >
-          Send Now
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+              <button
+                onClick={confirmSend}
+                className="px-4 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800"
+              >
+                Send Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

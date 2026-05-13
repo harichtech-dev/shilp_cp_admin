@@ -13,7 +13,7 @@ export default function AddUser() {
     name: "",
     email: "",
     phone: "",
-    companyName: "",
+    company: "",
   });
 
   const [logo, setLogo] = useState<File | null>(null);
@@ -24,7 +24,7 @@ export default function AddUser() {
 
     if (!form.name) newErrors.name = "Name is required";
     if (!form.email) newErrors.email = "Email is required";
-    if (!form.companyName) newErrors.companyName = "Company is required";
+    if (!form.company) newErrors.company = "Company is required";
     if (!form.phone) newErrors.phone = "Phone is required";
 
     setErrors(newErrors);
@@ -99,12 +99,12 @@ export default function AddUser() {
           <input
             type="text"
             placeholder="Enter company"
-            value={form.companyName}
-            onChange={(e) => setForm({ ...form, companyName: e.target.value })}
+            value={form.company}
+            onChange={(e) => setForm({ ...form, company: e.target.value })}
             className="w-full text-black mt-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
           />
-          {errors.companyName && (
-            <p className="text-red-500 text-xs mt-1">{errors.companyName}</p>
+          {errors.company && (
+            <p className="text-red-500 text-xs mt-1">{errors.company}</p>
           )}
         </div>
 

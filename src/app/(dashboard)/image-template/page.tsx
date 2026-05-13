@@ -144,15 +144,18 @@ const page = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
           {templates.map((template) => (
             <Link key={template.id} href={`/send?template=${template.id}`}>
+              
               <div
                 key={template.id}
                 className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer group"
               >
                 {/* IMAGE */}
                 <div className="h-[240px] bg-gray-100 flex items-center justify-center p-3">
+                  
                   <img
-                    src={`${process.env.NEXT_PUBLIC_API_URL}${template.image}`}
+                    src={`${template.image}`}
                     alt={template.name}
+                    referrerPolicy="no-referrer"
                     className="max-h-full object-contain group-hover:scale-105 transition duration-300"
                   />
                 </div>

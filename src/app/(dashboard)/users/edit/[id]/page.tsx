@@ -13,7 +13,7 @@ export default function EditUser() {
     name: "",
     email: "",
     phone: "",
-    companyName: "",
+    company: "",
     role: "",
   });
 
@@ -30,7 +30,7 @@ export default function EditUser() {
         name: user.name || "",
         email: user.email || "",
         phone: user.phone || "",
-        companyName: user.companyName || "",
+        company: user.company || "",
         role: user.role || "",
       });
 
@@ -94,8 +94,8 @@ export default function EditUser() {
         <div>
           <label className="text-sm text-gray-600">Company</label>
           <input
-            value={form.companyName}
-            onChange={(e) => setForm({ ...form, companyName: e.target.value })}
+            value={form.company}
+            onChange={(e) => setForm({ ...form, company: e.target.value })}
             className="w-full text-black mt-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
           />
         </div>
@@ -133,9 +133,10 @@ export default function EditUser() {
               src={
                 logo
                   ? URL.createObjectURL(logo)
-                  : `${process.env.NEXT_PUBLIC_API_URL}${preview}`
+                  : `${preview}`
               }
               className="h-26 rounded-2xl object-cover border mt-3"
+              referrerPolicy="no-referrer"
             />
           )}
         </div>

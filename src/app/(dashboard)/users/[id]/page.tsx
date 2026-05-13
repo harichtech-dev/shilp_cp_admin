@@ -42,10 +42,12 @@ export default function ViewUser() {
         <img
           src={
             user.logo
-              ? `${process.env.NEXT_PUBLIC_API_URL}${user.logo}`
+              ? `${user.logo}`
               : "/default-avatar.png"
           }
           className="w-16 h-16 rounded-full object-cover border"
+          referrerPolicy="no-referrer"
+
         />
 
         <div>
@@ -64,7 +66,7 @@ export default function ViewUser() {
 
         <div>
           <p className="text-gray-500">Company</p>
-          <p className="font-medium text-black">{user.companyName || "-"}</p>
+          <p className="font-medium text-black">{user.company || "-"}</p>
         </div>
 
         {/* <div>

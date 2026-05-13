@@ -114,7 +114,7 @@ export default function IntegrationsPage() {
 
         return (
           <div
-            key={integration.id}
+            key={integration._id}
             className="bg-white shadow rounded-xl p-6 border"
           >
             {/* Header */}

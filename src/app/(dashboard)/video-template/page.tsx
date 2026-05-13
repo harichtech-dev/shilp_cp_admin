@@ -314,7 +314,7 @@ export default function VideoTemplatePage() {
             </p>
             <input
               type="text"
-              placeholder="e.g. property_reel_send"
+              placeholder="e.g. property_video_share"
               value={watiTemplateName}
               onChange={(e) => setWatiTemplateName(e.target.value)}
               className="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
@@ -360,12 +360,20 @@ export default function VideoTemplatePage() {
             <Link key={t.id} href={`/send?videoTemplate=${t.id}`}>
               <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer group">
                 <div className="h-[220px] bg-black overflow-hidden flex items-center justify-center">
-                  <video
-                    src={`${process.env.NEXT_PUBLIC_API_URL}${t.video}`}
+                  {/* <video
+                    src={`${t.video}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition"
                     muted
+                    autoPlay
                     loop
                     playsInline
+                    preload="metadata"
+                  /> */}
+                  <iframe
+                    src={t.video}
+                    className="w-full h-full"
+                    allow="autoplay"
+                    allowFullScreen
                   />
                 </div>
 
@@ -375,9 +383,7 @@ export default function VideoTemplatePage() {
                   <h3 className="text-sm font-semibold text-gray-800 truncate">
                     {t.name}
                   </h3>
-                  <p className="text-xs text-gray-500">
-                    Layout: {t.layout}
-                  </p>
+                  <p className="text-xs text-gray-500">Layout: {t.layout}</p>
                   <div className="flex items-center justify-between pt-2">
                     <span className="text-xs text-blue-600 font-medium">
                       Use Template →

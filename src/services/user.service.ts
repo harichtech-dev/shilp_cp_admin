@@ -14,15 +14,15 @@ export const getAllUsers = async () => {
   return res.data;
 };
 
-export const deleteUser = async (id: string) => {
-  return api.delete(`/users/${id}`);
+export const deleteUser = async (_id: string) => {
+  return api.delete(`/users/${_id}`);
 };
 
 export const createUser = async (data: {
   name: string;
   email: string;
   phone?: string;
-  companyName?: string;
+  company?: string;
   logo?: File | null;
 }) => {
   const formData = new FormData();
@@ -32,7 +32,7 @@ export const createUser = async (data: {
   
 
   if (data.phone) formData.append("phone", data.phone);
-    if (data.companyName) formData.append("companyName", data.companyName);
+    if (data.company) formData.append("company", data.company);
   if (data.logo) formData.append("logo", data.logo);
 
   const res = await api.post("/users", formData, {
@@ -43,25 +43,26 @@ export const createUser = async (data: {
 };
 
 // ✅ GET single user (you don't have this yet → reuse list)
-export const getUserById = async (id: string) => {
-  const res = await api.get(`/users/${id}`);
+export const getUserById = async (_id: string) => {
+  const res = await api.get(`/users/${_id}`);
+  console.log("getUserById response:", res.data);
   return res.data.data;
 };
 
 // ✅ UPDATE user
-export const updateUser = async (id: string, data: any) => {
+export const updateUser = async (_id: string, data: any) => {
   const formData = new FormData();
 
   formData.append("name", data.name);
   formData.append("email", data.email);
   formData.append("phone", data.phone);
-  formData.append("companyName", data.companyName);
+  formData.append("company", data.company);
 
   if (data.logo) {
     formData.append("logo", data.logo);
   }
 
-  const res = await api.put(`/users/${id}`, formData, {
+  const res = await api.put(`/users/${_id}`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 

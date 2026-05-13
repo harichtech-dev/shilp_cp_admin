@@ -33,13 +33,18 @@ export default function RootLayout({
         {/* ✅ GLOBAL TOASTER (IMPORTANT) */}
         <Toaster
           position="top-right"
-          richColors
-          theme="light"
+          theme="dark"
           toastOptions={{
-            style: {
-              background: "#ffffff",
-              color: "#09090b",
-              border: "1px solid #27272a",
+            classNames: {
+              toast: "bg-black text-white border border-white/10",
+              title: "text-white",
+              description: "text-zinc-300",
+              actionButton: "bg-white text-black",
+              cancelButton: "bg-zinc-800 text-white",
+              success: "!bg-black !text-white !border-white/10",
+              error: "!bg-black !text-white !border-white/10",
+              warning: "!bg-black !text-white !border-white/10",
+              info: "!bg-black !text-white !border-white/10",
             },
           }}
         />
