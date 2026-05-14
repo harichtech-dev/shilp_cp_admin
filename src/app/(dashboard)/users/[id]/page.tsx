@@ -55,6 +55,8 @@ export default function ViewUser() {
               ? `${user.logo}`
               : "/default-avatar.png"
           }
+          height={64}
+          width={64}
           alt="User Logo"
           className="w-16 h-16 rounded-full object-cover border"
           referrerPolicy="no-referrer"

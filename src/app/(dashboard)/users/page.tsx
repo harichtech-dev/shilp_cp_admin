@@ -134,10 +134,12 @@ export default function UsersPage() {
                 <td className="px-6 py-3 text-center">
                   {user.logo ? (
                     <Image
-                      src={`${user.logo}`}
-                      referrerPolicy="no-referrer"
+                      src={user.logo}
                       alt="logo"
-                      className="w-15 h-15 object-contain mx-auto rounded-md border"
+                      width={60}
+                      height={60}
+                      referrerPolicy="no-referrer"
+                      className="object-contain mx-auto rounded-md border"
                     />
                   ) : (
                     <span className="text-xs text-gray-400">—</span>

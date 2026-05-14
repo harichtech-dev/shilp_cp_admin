@@ -137,8 +137,10 @@ export default function EditUser() {
                   ? URL.createObjectURL(logo)
                   : `${preview}`
               }
+              height={68}
+              width={68}
               alt="Logo Preview"
-              className="w-32 h-32 rounded-full object-cover border mt-3"
+              className="rounded-full object-cover border mt-3"
               referrerPolicy="no-referrer"
             />
           )}
