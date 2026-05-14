@@ -1,3 +1,20 @@
+// import axios, { InternalAxiosRequestConfig } from "axios";
+
+// export const api = axios.create({
+//   baseURL: process.env.NEXT_PUBLIC_API_URL,
+// });
+
+// // Attach token automatically
+// api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+//   const token = localStorage.getItem("token");
+//   console.log("token", token);
+//   if (token) {
+//     config.headers = config.headers ?? {};
+//     config.headers.Authorization = `Bearer ${token}`;
+//   }
+//   return config;
+// });
+
 import axios, { InternalAxiosRequestConfig } from "axios";
 
 export const api = axios.create({
@@ -5,12 +22,27 @@ export const api = axios.create({
 });
 
 // Attach token automatically
-api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem("token");
-  console.log("token", token);
-  if (token) {
-    config.headers = config.headers ?? {};
-    config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+
+    // ✅ Safe for Vercel / SSR
+    if (typeof window !== "undefined") {
+
+      const token = localStorage.getItem("token");
+
+      console.log("token", token);
+
+      if (token) {
+        config.headers = config.headers ?? {};
+
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+
+    return config;
+  },
+
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
