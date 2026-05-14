@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getUserById, updateUser } from "@/services/user.service";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export default function EditUser() {
   const router = useRouter();
@@ -54,9 +55,10 @@ export default function EditUser() {
       toast.success("User updated successfully", { id: toastId });
 
       router.push("/users");
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.response?.data?.message || "Update failed", {
+    } catch (err) {
+      toast.error((err as { response?: { data?: { message?: string } } }).response?.data?.message ||
+        (err as { message?: string }).message ||
+        "Update failed", {
         id: toastId,
       });
     } finally {
@@ -129,13 +131,14 @@ export default function EditUser() {
 
           {/* Preview */}
           {(logo || preview) && (
-            <img
+            <Image
               src={
                 logo
                   ? URL.createObjectURL(logo)
                   : `${preview}`
               }
-              className="h-26 rounded-2xl object-cover border mt-3"
+              alt="Logo Preview"
+              className="w-32 h-32 rounded-full object-cover border mt-3"
               referrerPolicy="no-referrer"
             />
           )}

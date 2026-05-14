@@ -39,9 +39,7 @@ const Login = () => {
       router.push("/dashboard");
     } catch (error) {
       console.log(error)
-      toast.error(
-        (error as any)?.response?.data?.message || "Invalid credentials",
-      );
+      toast.error("Invalid credentials");
     } finally {
       setLoading(false);
     }

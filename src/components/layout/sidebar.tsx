@@ -186,7 +186,7 @@ export default function Sidebar({
               Sign out of Admin Panel?
             </h2>
             <p className="text-[13px] text-zinc-400 leading-relaxed mb-6">
-              You'll need to sign back in to access the dashboard and manage
+              You&apos;ll need to sign back in to access the dashboard and manage
               your templates.
             </p>
 

@@ -4,12 +4,21 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createUser } from "@/services/user.service";
 import { toast } from "sonner";
+import Image from "next/image";
+import axios, { AxiosError } from "axios";
 
+type FormState = {
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+};
+type FormErrors = Partial<Record<keyof FormState, string>>;
 export default function AddUser() {
   const router = useRouter();
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
     phone: "",
@@ -20,7 +29,7 @@ export default function AddUser() {
   const [loading, setLoading] = useState(false);
 
   const validateForm = () => {
-    const newErrors: any = {};
+    const newErrors: FormErrors = {};
 
     if (!form.name) newErrors.name = "Name is required";
     if (!form.email) newErrors.email = "Email is required";
@@ -46,11 +55,24 @@ export default function AddUser() {
       toast.success("User created successfully", { id: toastId });
 
       router.push("/users");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err?.response?.data?.errors?.[0] || "Failed to create user", {
-        id: toastId,
-      });
+
+      let message = "Failed to create user";
+
+      if (axios.isAxiosError(err)) {
+        const axiosError = err as AxiosError<{
+          errors?: string[];
+          message?: string;
+        }>;
+
+        message =
+          axiosError.response?.data?.errors?.[0] ||
+          axiosError.response?.data?.message ||
+          "Failed to create user";
+      }
+
+      toast.error(message, { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -140,8 +162,9 @@ export default function AddUser() {
 
           {logo && (
             <div className="mt-3">
-              <img
+              <Image
                 src={URL.createObjectURL(logo)}
+                alt="Logo Preview"
                 className="w-16 h-16 rounded-full object-cover border"
               />
             </div>

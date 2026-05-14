@@ -9,26 +9,49 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+interface IntegrationField {
+  key: string;
+  label: string;
+  type?: string;
+  placeholder?: string;
+}
+
+interface IntegrationConfig {
+  [key: string]: string;
+}
+
+interface Integration {
+  _id: string;
+  slug: string;
+  name: string;
+  status: "connected" | "disconnected";
+  config?: IntegrationConfig;
+  fields?: IntegrationField[];
+}
+
 export default function IntegrationsPage() {
-  const [integrations, setIntegrations] = useState<any[]>([]);
+  const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingSlug, setSavingSlug] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchIntegrations();
-  }, []);
+  const loadIntegrations = async () => {
+  const data = await getIntegrations();
+  setIntegrations(data.data || []);
+};
 
-  const fetchIntegrations = async () => {
-    try {
-      const data = await getIntegrations();
-      setIntegrations(data.data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getIntegrations();
+        setIntegrations(data.data || []);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const handleChange = (slug: string, key: string, value: string) => {
     setIntegrations((prev) =>
@@ -46,15 +69,17 @@ export default function IntegrationsPage() {
     );
   };
 
-  const saveConfig = async (slug: string, config: any) => {
+  const saveConfig = async (slug: string, config: IntegrationConfig = {}) => {
     try {
       setSavingSlug(slug);
 
       const res = await updateIntegrationConfig(slug, config);
       toast.success(res.message || "Connected successfully");
-      fetchIntegrations();
-    } catch (err: any) {
-      const message = err.response?.data?.message || "Error saving config";
+      await loadIntegrations();
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Error saving config";
 
       toast.error(message);
     } finally {
@@ -68,7 +93,7 @@ export default function IntegrationsPage() {
         slug,
         status === "connected" ? "disconnected" : "connected",
       );
-      fetchIntegrations();
+      await loadIntegrations();
     } catch (err) {
       console.error(err);
     }
@@ -137,7 +162,8 @@ export default function IntegrationsPage() {
 
             {/* 🔥 Dynamic Fields */}
             <div className="grid gap-4">
-              {Array.isArray(integration.fields) && integration.fields.map((field: any) => (
+              {Array.isArray(integration.fields) &&
+                integration.fields.map((field: IntegrationField) => (
                   <div key={field.key}>
                     <label className="text-sm text-gray-600">
                       {field.label}

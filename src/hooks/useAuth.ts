@@ -12,5 +12,5 @@ export const useAuth = () => {
     if (!token) {
       router.push("/login");
     }
-  }, []);
+  }, [router]);
 };

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   deleteTemplate,
@@ -9,6 +8,7 @@ import {
   uploadTemplate,
 } from "@/services/template.service";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Template {
   id: string;
@@ -16,12 +16,11 @@ interface Template {
   image: string;
 }
 
-const page = () => {
+const Page = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [templateName, setTemplateName] = useState("");
@@ -68,7 +67,7 @@ const page = () => {
       } else {
         toast.error(res.message || "Upload failed");
       }
-    } catch (err) {
+    } catch {
       toast.error("Upload failed");
     } finally {
       setUploading(false);
@@ -79,7 +78,21 @@ const page = () => {
   };
 
   useEffect(() => {
-    fetchTemplates();
+    const loadTemplates = async () => {
+      try {
+        const data = await getTemplates();
+
+        if (data.success) {
+          setTemplates(data.data);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadTemplates();
   }, []);
 
   // 🔹 Delete
@@ -93,7 +106,7 @@ const page = () => {
             await deleteTemplate(id);
             toast.success("Template deleted");
             fetchTemplates();
-          } catch (err) {
+          } catch {
             toast.error("Delete failed");
           }
         },
@@ -144,19 +157,19 @@ const page = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
           {templates.map((template) => (
             <Link key={template.id} href={`/send?template=${template.id}`}>
-              
               <div
                 key={template.id}
                 className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer group"
               >
                 {/* IMAGE */}
                 <div className="h-[240px] bg-gray-100 flex items-center justify-center p-3">
-                  
-                  <img
-                    src={`${template.image}`}
-                    alt={template.name}
+                  <Image
+                    src={template.image}
+                    alt="Template"
+                    width={800}
+                    height={800}
                     referrerPolicy="no-referrer"
-                    className="max-h-full object-contain group-hover:scale-105 transition duration-300"
+                    className="w-full h-full object-contain"
                   />
                 </div>
 
@@ -239,4 +252,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

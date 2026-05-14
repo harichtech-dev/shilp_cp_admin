@@ -8,8 +8,10 @@ import {
   deleteVideoTemplate,
 } from "@/services/video.service";
 import { toast } from "sonner";
+import { getTemplates } from "@/services/template.service";
 
 interface Template {
+  _id : string;
   id: string;
   name: string;
   video: string;
@@ -28,23 +30,36 @@ export default function VideoTemplatePage() {
 
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // 🔹 Fetch templates
   const fetchTemplates = async () => {
     try {
       const data = await getVideoTemplates();
       if (data.success) {
         setTemplates(data.data);
       }
-    } catch (err) {
-      console.error("Fetch error:", err);
+    } catch (error) {
+      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTemplates();
-  }, []);
+  const loadTemplates = async () => {
+    try {
+      const data = await getVideoTemplates();
+
+      if (data.success) {
+        setTemplates(data.data);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  void loadTemplates();
+}, []);
 
   // ✅ Step 1 - File selected → show modal
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

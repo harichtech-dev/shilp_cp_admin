@@ -3,12 +3,22 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getUserById } from "@/services/user.service";
+import Image from "next/image";
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  logo?: string;
+}
 
 export default function ViewUser() {
   const { id } = useParams();
   const router = useRouter();
 
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,12 +49,13 @@ export default function ViewUser() {
 
       {/* Header */}
       <div className="flex items-center gap-4 border-b pb-4">
-        <img
+        <Image
           src={
             user.logo
               ? `${user.logo}`
               : "/default-avatar.png"
           }
+          alt="User Logo"
           className="w-16 h-16 rounded-full object-cover border"
           referrerPolicy="no-referrer"
 
@@ -91,7 +102,7 @@ export default function ViewUser() {
         </button>
 
         <button
-          onClick={() => router.push(`/users/edit/${user.id}`)}
+          onClick={() => router.push(`/users/edit/${user._id}`)}
           className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
         >
           Edit

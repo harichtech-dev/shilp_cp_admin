@@ -6,9 +6,10 @@ import { getTemplates } from "@/services/template.service";
 import { getVideoTemplates, sendBulkVideo } from "@/services/video.service";
 import { sendBulkImage } from "@/services/whatsapp.service";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getIntegrations } from "@/services/integration.service";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface User {
   _id: string;
@@ -24,6 +25,24 @@ interface Template {
   name: string;
   image: string;
 }
+interface VideoTemplate {
+  _id: string;
+  name: string;
+  video: string;
+}
+
+interface Integration {
+  slug: string;
+  name: string;
+  status: string;
+}
+
+interface RawVideoTemplate {
+  _id?: string;
+  id?: string;
+  name: string;
+  previewUrl: string;
+}
 
 export default function SendContent() {
   const searchParams = useSearchParams();
@@ -32,27 +51,18 @@ export default function SendContent() {
 
   const [users, setUsers] = useState<User[]>([]);
   const [template, setTemplate] = useState<Template | null>(null);
-  const [videoTemplate, setVideoTemplate] = useState<any>(null);
+  const [videoTemplate, setVideoTemplate] = useState<VideoTemplate | null>(
+    null,
+  );
   const [sending, setSending] = useState(false);
   const [sentPct, setSentPct] = useState(0);
   const [message, setMessage] = useState("");
   const [platform, setPlatform] = useState("wati");
-  const [integrations, setIntegrations] = useState([]);
+  const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const router = useRouter();
-  useEffect(() => {
-    fetchAll();
-  }, [templateId, videoTemplateId]);
-
-  useEffect(() => {
-    getIntegrations().then((res) => {
-      const list = res.data || [];
-      setIntegrations(list.filter((i: any) => i.status === "connected"));
-    });
-  }, []);
-
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     try {
       const [userRes, imageRes, videoRes] = await Promise.all([
         getAllUsers(),
@@ -69,7 +79,8 @@ export default function SendContent() {
           : videoRes?.data || [];
 
         const vid = videoList.find(
-          (v: any) => String(v._id || v.id) === String(videoTemplateId),
+          (v: RawVideoTemplate) =>
+            String(v._id || v.id) === String(videoTemplateId),
         );
 
         console.log("videoList", videoList);
@@ -88,14 +99,31 @@ export default function SendContent() {
       // 🖼 IMAGE
       if (templateId) {
         const tmpl = imageRes.data.find(
-          (t: any) => String(t.id) === String(templateId),
+          (t: Template & { id?: string }) =>
+            String(t.id || t._id) === String(templateId),
         );
         setTemplate(tmpl);
       }
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [templateId, videoTemplateId]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      void fetchAll();
+    });
+  }, [fetchAll]);
+
+  useEffect(() => {
+    queueMicrotask(async () => {
+      const res = await getIntegrations();
+
+      const list: Integration[] = res.data || [];
+
+      setIntegrations(list.filter((i) => i.status === "connected"));
+    });
+  }, []);
 
   const handleSend = () => {
     if (!templateId && !videoTemplateId) {
@@ -139,9 +167,12 @@ export default function SendContent() {
       } else {
         setMessage("Failed: " + (res.message || "Something went wrong"));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg =
-        err.response?.data?.message || err.message || "Failed to send.";
+        (err as { response?: { data?: { message?: string } } }).response?.data
+          ?.message ||
+        (err as { message?: string }).message ||
+        "Failed to send.";
       setMessage("Failed: " + msg);
       toast.error(msg);
     } finally {
@@ -214,7 +245,7 @@ export default function SendContent() {
             onChange={(e) => setPlatform(e.target.value)}
             className="w-full border border-gray-300 px-4 py-2.5 rounded-lg text-sm"
           >
-            {integrations.map((i: any) => (
+            {integrations.map((i) => (
               <option key={i.slug} value={i.slug}>
                 {i.name}
               </option>
@@ -250,11 +281,13 @@ export default function SendContent() {
               )
             ) : /* IMAGE */
             template?.image ? (
-              <img
-                src={`${template.image}`}
+              <Image
+                src={template.image}
+                alt="Template"
+                width={800}
+                height={800}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-contain"
-                alt="Template"
               />
             ) : (
               <p className="text-gray-400">No preview available</p>

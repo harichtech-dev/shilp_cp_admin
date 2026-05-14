@@ -1,26 +1,48 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getUsers, deleteUser } from "@/services/user.service";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Image from "next/image";
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  logo?: string;
+}
+
+interface Pagination {
+  pages: number;
+  total?: number;
+  currentPage?: number;
+}
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState<any>({});
+  const [pagination, setPagination] = useState<Pagination>({
+    pages: 0,
+  });
   const router = useRouter();
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     const res = await getUsers({ page, search });
+
     setUsers(res.data || res);
     setPagination(res.pagination);
-  };
+  }, [page, search]);
 
   useEffect(() => {
-    fetchUsers();
-  }, [page, search]);
+    const loadUsers = async () => {
+      await fetchUsers();
+    };
+
+    void loadUsers();
+  }, [fetchUsers]);
 
   const handleDelete = async (_id: string) => {
     const toastId = toast("Are you sure you want to delete this user?", {
@@ -35,7 +57,7 @@ export default function UsersPage() {
             toast.success("User deleted successfully");
 
             fetchUsers();
-          } catch (err) {
+          } catch {
             toast.error("Failed to delete user");
           }
         },
@@ -111,7 +133,7 @@ export default function UsersPage() {
                 {/* LOGO */}
                 <td className="px-6 py-3 text-center">
                   {user.logo ? (
-                    <img
+                    <Image
                       src={`${user.logo}`}
                       referrerPolicy="no-referrer"
                       alt="logo"

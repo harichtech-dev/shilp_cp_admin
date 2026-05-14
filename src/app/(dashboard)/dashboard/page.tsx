@@ -38,7 +38,7 @@
 
 //       {/* Cards */}
 //       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
+
 //         {/* Users */}
 //         <div
 //           className="cursor-pointer bg-white p-6 rounded-2xl shadow hover:shadow-lg transition"
@@ -104,7 +104,7 @@ Chart.register(
   CategoryScale,
   LinearScale,
   Tooltip,
-  Filler
+  Filler,
 );
 
 /**
@@ -127,12 +127,16 @@ function formatLabel(dateStr: string, totalDays: number): string {
   }); // "May 8"
 }
 
-export default function page() {
+export default function Page() {
   const router = useRouter();
   useAuth();
 
   // ── Stat cards ──────────────────────────────────────────────────────────
-  const [stats, setStats] = useState({ users: 0, imageTemplates: 0, videoTemplates: 0 });
+  const [stats, setStats] = useState({
+    users: 0,
+    imageTemplates: 0,
+    videoTemplates: 0,
+  });
   const [statsLoading, setStatsLoading] = useState(true);
 
   // ── Delivery volume ─────────────────────────────────────────────────────
@@ -153,14 +157,31 @@ export default function page() {
   }, []);
 
   // ── Fetch delivery volume whenever range changes ─────────────────────────
-  useEffect(() => {
-    setVolumeLoading(true);
-    setVolumeError(false);
-    getDeliveryVolume(range)
-      .then(setVolumeData)
-      .catch(() => setVolumeError(true))
-      .finally(() => setVolumeLoading(false));
-  }, [range]);
+  // useEffect(() => {
+  //   setVolumeLoading(true);
+  //   setVolumeError(false);
+  //   getDeliveryVolume(range)
+  //     .then(setVolumeData)
+  //     .catch(() => setVolumeError(true))
+  //     .finally(() => setVolumeLoading(false));
+  // }, [range]);
+
+useEffect(() => {
+  (async () => {
+    try {
+      setVolumeLoading(true);
+      setVolumeError(false);
+
+      const data = await getDeliveryVolume(range);
+
+      setVolumeData(data);
+    } catch {
+      setVolumeError(true);
+    } finally {
+      setVolumeLoading(false);
+    }
+  })();
+}, [range]);
 
   // ── Render / update chart whenever volumeData changes ───────────────────
   useEffect(() => {
@@ -317,7 +338,9 @@ export default function page() {
             />
             Image
             {!volumeLoading && (
-              <span className="ml-1 font-medium text-gray-700">{totalImage}</span>
+              <span className="ml-1 font-medium text-gray-700">
+                {totalImage}
+              </span>
             )}
           </span>
           <span className="flex items-center gap-1.5 text-xs text-gray-500">
@@ -327,7 +350,9 @@ export default function page() {
             />
             Video
             {!volumeLoading && (
-              <span className="ml-1 font-medium text-gray-700">{totalVideo}</span>
+              <span className="ml-1 font-medium text-gray-700">
+                {totalVideo}
+              </span>
             )}
           </span>
         </div>
@@ -346,7 +371,9 @@ export default function page() {
           )}
           <canvas
             ref={volRef}
-            className={volumeLoading || volumeError ? "opacity-0" : "opacity-100"}
+            className={
+              volumeLoading || volumeError ? "opacity-0" : "opacity-100"
+            }
           />
         </div>
       </div>

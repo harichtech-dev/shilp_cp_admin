@@ -1,3 +1,4 @@
+import { IntegrationConfig } from "@/types/integration";
 import { api } from "./api";
 
 // ✅ Get all integrations
@@ -15,7 +16,7 @@ export const getIntegration = async (slug: string) => {
 // ✅ Update config (connect)
 export const updateIntegrationConfig = async (
   slug: string, 
-  config: any
+  config: IntegrationConfig
 ) => {
   const res = await api.put(`/integrations/${slug}/config`, config);
   return res.data;
