@@ -5,13 +5,12 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "lh3.googleusercontent.com",
+        hostname: "drive.google.com",
       },
       {
         protocol: "https",
-        hostname: "drive.google.com",
+        hostname: "lh3.googleusercontent.com",
       },
-
     ],
     domains: ["images.unsplash.com"],
   },
