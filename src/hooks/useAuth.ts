@@ -9,7 +9,9 @@ export const useAuth = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    if (!token) {
+    if (token) {
+      document.cookie = `token=${token}; path=/`;
+    } else {
       router.push("/login");
     }
   }, [router]);
