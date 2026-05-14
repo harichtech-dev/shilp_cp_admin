@@ -1,6 +1,21 @@
 import { api } from "./api";
 
+export interface DeliveryVolume {
+  labels: string[]; // ["2026-05-08", "2026-05-09", ...]
+  image: number[]; // daily image template creation counts
+  video: number[]; // daily video template creation counts
+}
+
 export const getDashboardStats = async () => {
   const res = await api.get("/dashboard/dashboard");
   return res.data;
+};
+
+export const getDeliveryVolume = async (
+  days: 7 | 14 | 30 = 7,
+): Promise<DeliveryVolume> => {
+  const { data } = await api.get(`/dashboard/delivery-volume`, {
+    params: { days },
+  });
+  return data.data;
 };
