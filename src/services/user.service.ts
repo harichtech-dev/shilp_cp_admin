@@ -19,7 +19,9 @@ export const getUsers = async ({
   limit = 10,
   search = "",
 }: GetUsersParams) => {
-  const res = await api.get(`/users?page=${page}&limit=${limit}&search=${search}`);
+  const res = await api.get(
+    `/users?page=${page}&limit=${limit}&search=${search}`,
+  );
   return res.data;
 };
 
@@ -43,10 +45,9 @@ export const createUser = async (data: {
 
   formData.append("name", data.name);
   formData.append("email", data.email);
-  
 
   if (data.phone) formData.append("phone", data.phone);
-    if (data.company) formData.append("company", data.company);
+  if (data.company) formData.append("company", data.company);
   if (data.logo) formData.append("logo", data.logo);
 
   const res = await api.post("/users", formData, {
@@ -80,5 +81,11 @@ export const updateUser = async (_id: string, data: UpdateUserPayload) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
+  return res.data;
+};
+
+export const handleSatus = async (_id: string, status: number) => {
+  const newStatus = status === 1 ? 0 : 1;
+  const res = await api.patch(`/users/${_id}/status`, { status: newStatus });
   return res.data;
 };

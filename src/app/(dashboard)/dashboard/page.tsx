@@ -5,6 +5,8 @@ import {
   getDashboardStats,
   getDeliveryVolume,
   type DeliveryVolume,
+  getMonthlyMessages,
+  MonthlyMessages,
 } from "@/services/dashboard.service";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -17,6 +19,8 @@ import {
   LinearScale,
   Tooltip,
   Filler,
+  BarController,
+  BarElement,
 } from "chart.js";
 
 Chart.register(
@@ -24,6 +28,8 @@ Chart.register(
   PointElement,
   LineController,
   CategoryScale,
+  BarElement,
+  BarController,
   LinearScale,
   Tooltip,
   Filler,
@@ -66,9 +72,13 @@ export default function Page() {
   const [volumeData, setVolumeData] = useState<DeliveryVolume | null>(null);
   const [volumeLoading, setVolumeLoading] = useState(true);
   const [volumeError, setVolumeError] = useState(false);
-
+  const [monthlyData, setMonthlyData] = useState<MonthlyMessages | null>(null);
+  const [monthlyLoading, setMonthlyLoading] = useState(true);
+  const [monthlyError, setMonthlyError] = useState(false);
   const volRef = useRef<HTMLCanvasElement>(null);
   const volChart = useRef<Chart | null>(null);
+  const monthlyRef = useRef<HTMLCanvasElement>(null);
+  const monthlyChart = useRef<Chart | null>(null);
 
   // ── Fetch stats ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -88,22 +98,40 @@ export default function Page() {
   //     .finally(() => setVolumeLoading(false));
   // }, [range]);
 
-useEffect(() => {
-  (async () => {
-    try {
-      setVolumeLoading(true);
-      setVolumeError(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        setVolumeLoading(true);
+        setVolumeError(false);
 
-      const data = await getDeliveryVolume(range);
+        const data = await getDeliveryVolume(range);
 
-      setVolumeData(data);
-    } catch {
-      setVolumeError(true);
-    } finally {
-      setVolumeLoading(false);
-    }
-  })();
-}, [range]);
+        setVolumeData(data);
+      } catch {
+        setVolumeError(true);
+      } finally {
+        setVolumeLoading(false);
+      }
+    })();
+  }, [range]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setMonthlyLoading(true);
+        setMonthlyError(false);
+
+        const data = await getMonthlyMessages();
+
+        setMonthlyData(data);
+      } catch (err) {
+        console.error(err);
+        setMonthlyError(true);
+      } finally {
+        setMonthlyLoading(false);
+      }
+    })();
+  }, []);
 
   // ── Render / update chart whenever volumeData changes ───────────────────
   useEffect(() => {
@@ -180,6 +208,92 @@ useEffect(() => {
     };
   }, [volumeData, range]);
 
+  useEffect(() => {
+    if (!monthlyRef.current || !monthlyData) return;
+
+    if (monthlyChart.current) {
+      monthlyChart.current.data.labels = monthlyData.labels;
+
+      monthlyChart.current.data.datasets[0].data = monthlyData.image;
+
+      monthlyChart.current.data.datasets[1].data = monthlyData.video;
+
+      monthlyChart.current.update();
+
+      return;
+    }
+
+    monthlyChart.current = new Chart(monthlyRef.current, {
+      type: "bar",
+
+      data: {
+        labels: monthlyData.labels,
+
+       datasets: [
+  {
+    label: "Image",
+    data: monthlyData.image,
+    borderColor: "#378ADD",
+    backgroundColor: "rgba(55,138,221,0.12)",
+    borderWidth: 2,
+    borderRadius: 6,
+    barThickness: 80,
+  },
+
+  {
+    label: "Video",
+    data: monthlyData.video,
+    borderColor: "#1D9E75",
+    backgroundColor: "rgba(29,158,117,0.12)",
+    borderWidth: 2,
+    borderRadius: 6,
+    barThickness: 80,
+  },
+],
+      },
+
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        plugins: {
+          legend: { display: false },
+          tooltip: { mode: "index", intersect: false },
+        },
+
+        scales: {
+          x: {
+            grid: { display: false },
+
+            ticks: {
+              font: { size: 11 },
+              color: "#888",
+              maxRotation: 0,
+            },
+          },
+
+          y: {
+            grid: {
+              color: "rgba(128,128,128,0.1)",
+            },
+
+            ticks: {
+              font: { size: 11 },
+              color: "#888",
+              precision: 0,
+            },
+
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    return () => {
+      monthlyChart.current?.destroy();
+      monthlyChart.current = null;
+    };
+  }, [monthlyData]);
   // ── Totals from volume data (for mini summary) ───────────────────────────
   const totalImage = volumeData?.image.reduce((a, b) => a + b, 0) ?? 0;
   const totalVideo = volumeData?.video.reduce((a, b) => a + b, 0) ?? 0;
@@ -295,6 +409,59 @@ useEffect(() => {
             ref={volRef}
             className={
               volumeLoading || volumeError ? "opacity-0" : "opacity-100"
+            }
+          />
+        </div>
+      </div>
+
+      {/* ── Monthly Messages Chart ─────────────────────────────────────── */}
+      <div className="bg-white p-6 rounded-2xl shadow mt-8">
+        <div className="mb-1">
+          <h2 className="text-sm font-semibold text-gray-800">
+            Monthly Messages Sent
+          </h2>
+
+          <p className="text-xs text-gray-400">
+            Image vs video messages sent per month
+          </p>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-6 mt-3 mb-4">
+          <span className="flex items-center gap-1.5 text-xs text-gray-500">
+            <span
+              className="w-3 h-2 rounded-sm inline-block"
+              style={{ background: "#378ADD" }}
+            />
+            Image
+          </span>
+
+          <span className="flex items-center gap-1.5 text-xs text-gray-500">
+            <span
+              className="w-3 h-2 rounded-sm inline-block"
+              style={{ background: "#1D9E75" }}
+            />
+            Video
+          </span>
+        </div>
+
+        <div className="relative h-56">
+          {monthlyLoading && (
+            <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-400">
+              Loading...
+            </div>
+          )}
+
+          {monthlyError && !monthlyLoading && (
+            <div className="absolute inset-0 flex items-center justify-center text-sm text-red-400">
+              Failed to load data.
+            </div>
+          )}
+
+          <canvas
+            ref={monthlyRef}
+            className={
+              monthlyLoading || monthlyError ? "opacity-0" : "opacity-100"
             }
           />
         </div>

@@ -6,6 +6,12 @@ export interface DeliveryVolume {
   video: number[]; // daily video template creation counts
 }
 
+export interface MonthlyMessages {
+  labels: string[];
+  image: number[];
+  video: number[];
+}
+
 export const getDashboardStats = async () => {
   const res = await api.get("/dashboard/dashboard");
   return res.data;
@@ -19,3 +25,12 @@ export const getDeliveryVolume = async (
   });
   return data.data;
 };
+
+export const getMonthlyMessages =
+  async (): Promise<MonthlyMessages> => {
+    const { data } = await api.get(
+      "/dashboard/monthly-messages"
+    );
+
+    return data.data;
+  };

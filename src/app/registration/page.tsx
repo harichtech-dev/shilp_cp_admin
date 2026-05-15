@@ -423,6 +423,7 @@ import { toast } from "sonner";
 export default function ChannelProviderRegistration() {
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(5);
 
   const [form, setForm] = useState({
     name: "",
@@ -487,6 +488,19 @@ export default function ChannelProviderRegistration() {
         setMessage(result.message);
         setForm({ name: "", email: "", phone: "", company: "" });
         setLogo(null);
+        let seconds = 5;
+
+        setCountdown(seconds);
+        const timer = setInterval(() => {
+          seconds--;
+
+          setCountdown(seconds);
+
+          if (seconds === 0) {
+            clearInterval(timer);
+            window.location.href = "https://shilp.co.in";
+          }
+        }, 1000);
       } else {
         setSuccess(false);
         setMessage(result.message);
@@ -529,7 +543,7 @@ export default function ChannelProviderRegistration() {
 
           {/* Logo */}
           <div className="relative z-10">
-            <div className="inline-flex bg-white rounded-xl px-3 py-2">
+            <div className="inline-flex rounded-xl px-3 py-2">
               <Image
                 src="/1709012973-logo.webp"
                 alt="Shilp"
@@ -557,7 +571,7 @@ export default function ChannelProviderRegistration() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-2 mb-6">
               {[
-                { n: "100+", l: "Projects" },
+                { n: "50+", l: "Projects" },
                 { n: "24/7", l: "Access" },
                 { n: "Instant", l: "Delivery" },
               ].map((s) => (
@@ -797,7 +811,13 @@ export default function ChannelProviderRegistration() {
                     : "bg-red-50 border-red-200 text-red-600"
                 }`}
               >
-                {message}
+                <p>{message}</p>
+
+                {success && (
+                  <p className="mt-1 text-green-600">
+                    Redirecting to SHILP website in {countdown} seconds...
+                  </p>
+                )}
               </div>
             )}
           </form>
