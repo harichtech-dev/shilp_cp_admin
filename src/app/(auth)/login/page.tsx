@@ -32,13 +32,18 @@ const Login = () => {
       setLoading(true);
 
       const res = await login({ email, password });
+      
       setUser(res.admin);
+
+      document.cookie = `token=${res.token}; path=/`;
+
+      localStorage.setItem("token", res.token);
 
       toast.success("Login Successfully");
 
       router.push("/dashboard");
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error("Invalid credentials");
     } finally {
       setLoading(false);
