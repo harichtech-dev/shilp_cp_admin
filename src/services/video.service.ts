@@ -43,6 +43,19 @@ export const sendBulkVideo = async ({
 export const deleteVideoTemplate = async (id: string) => {
   return api.delete(`/videos/templates/${id}`);
 };
+
+// preview video
+export const previewVideo = async ({
+  templateId,
+}: {
+  templateId: string;
+}) => {
+  const res = await api.post("/videos/preview", {
+    templateId,
+  });
+
+  return res.data;
+};
 // export const sendBulkVideo = async (templateId : string) => {
 //     const res = await api.post("/videos/send-bulk" , {templateId})
 //     return res.data;

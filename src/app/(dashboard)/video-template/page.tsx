@@ -311,6 +311,7 @@ export default function VideoTemplatePage() {
           >
             <option value={1}>Layout 1 (Header + Footer)</option>
             <option value={2}>Layout 2 (Footer Only)</option>
+            <option value={3}>Layout 3 (Bottom Details Section)</option>
           </select>
         </div>
         <p className="text-xs text-gray-400 mt-3">

@@ -2,8 +2,12 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { getAllUsers } from "@/services/user.service";
-import { getTemplates } from "@/services/template.service";
-import { getVideoTemplates, sendBulkVideo } from "@/services/video.service";
+import { getTemplates, previewImage } from "@/services/template.service";
+import {
+  getVideoTemplates,
+  sendBulkVideo,
+  previewVideo,
+} from "@/services/video.service";
 import { sendBulkImage } from "@/services/whatsapp.service";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -60,6 +64,7 @@ export default function SendContent() {
   const [platform, setPlatform] = useState("wati");
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
 
   const router = useRouter();
   const fetchAll = useCallback(async () => {
@@ -94,6 +99,16 @@ export default function SendContent() {
             video: vid.previewUrl,
           });
         }
+
+        const preview = await previewVideo({
+          templateId: videoTemplateId,
+        });
+
+        console.log("preview response", preview);
+
+        if (preview.success) {
+          setPreviewUrl(preview.url);
+        }
       }
 
       // 🖼 IMAGE
@@ -103,6 +118,14 @@ export default function SendContent() {
             String(t.id || t._id) === String(templateId),
         );
         setTemplate(tmpl);
+
+        const preview = await previewImage({
+          templateId,
+        });
+
+        if (preview.success) {
+          setPreviewUrl(preview.publicUrl || preview.url);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -258,39 +281,33 @@ export default function SendContent() {
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         <div className="flex">
           {/* LEFT — full image, object-contain, no crop */}
-          <div className="w-[48%] flex-shrink-0 border-r border-gray-100 bg-gray-50 flex items-center justify-center min-h-[420px]">
-            {/* VIDEO */}
+          <div className="w-[48%] flex-shrink-0 border-r border-gray-100 bg-black flex items-center justify-center min-h-[420px] overflow-hidden">
             {videoTemplateId ? (
-              videoTemplate?.video ? (
-                // <video
-                //   src={`${videoTemplate.video}`}
-                //   className="w-full h-full object-contain"
-                //   controls
-                //   autoPlay
-                //   loop
-                //   muted
-                // />
-                <iframe
-                  src={videoTemplate.video}
-                  className="w-full h-full rounded-xl"
-                  allow="autoplay"
-                  allowFullScreen
+              previewUrl ? (
+                <video
+                  key={previewUrl}
+                  src={previewUrl}
+                  className="max-h-[820px] w-auto object-contain"
+                  controls
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  crossOrigin="anonymous"
                 />
               ) : (
-                <p className="text-gray-400">No video preview</p>
+                <p className="text-gray-400">Loading video preview...</p>
               )
-            ) : /* IMAGE */
-            template?.image ? (
+            ) : previewUrl ? (
               <Image
-                src={template.image}
-                alt="Template"
+                src={previewUrl}
+                alt="Preview"
                 width={800}
-                height={800}
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-contain"
+                height={1200}
+                className="h-full max-h-[720px] w-auto object-contain"
               />
             ) : (
-              <p className="text-gray-400">No preview available</p>
+              <p className="text-gray-400">Loading image preview...</p>
             )}
           </div>
 

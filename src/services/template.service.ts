@@ -25,3 +25,15 @@ export const uploadTemplate = async (file: File, providers: { platform: string; 
 export const deleteTemplate = async (id: string) => {
   return api.delete(`/whatsapp/templates/${id}`);
 };
+
+export const previewImage = async ({
+  templateId,
+}: {
+  templateId: string;
+}) => {
+  const res = await api.post("/whatsapp/preview-image", {
+    templateId,
+  });
+
+  return res.data;
+};
