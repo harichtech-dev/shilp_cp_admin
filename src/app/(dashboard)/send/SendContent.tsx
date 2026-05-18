@@ -486,119 +486,143 @@ export default function SendContent() {
               </div>
             )} */}
 
-{/* Color Customization — only shown for video templates */}
-{videoTemplateId && (
-  <div className="space-y-3">
-    <div className="grid grid-cols-2 gap-3">
+            {/* Color Customization — only shown for video templates */}
+            {videoTemplateId && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Background Color */}
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5 block">
+                      Background Color
+                    </label>
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-2.5">
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          "#E5C840",
+                          "#F4F5F7",
+                          "#0F172A",
+                          "#1E3A5F",
+                          "#14532D",
+                          "#7C3AED",
+                          "#DC2626",
+                          "#EA580C",
+                          "#ffffff",
+                          "#111111",
+                        ].map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            title={c}
+                            onClick={() => setBgColor(c)}
+                            style={{ background: c }}
+                            className={`w-7 h-7 rounded-md flex-shrink-0 transition-transform duration-100 border-2 hover:scale-110 ${
+                              bgColor === c
+                                ? "border-gray-900 scale-110"
+                                : c === "#ffffff"
+                                  ? "border-gray-300"
+                                  : "border-transparent"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="border-t border-gray-200 pt-2.5 flex items-center gap-2">
+                        <label
+                          className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer flex-shrink-0 overflow-hidden relative"
+                          style={{ background: bgColor }}
+                        >
+                          <input
+                            type="color"
+                            value={bgColor}
+                            onChange={(e) => setBgColor(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                        </label>
+                        <span className="text-[11px] text-gray-400">
+                          Custom
+                        </span>
+                        <input
+                          type="text"
+                          value={bgColor}
+                          maxLength={7}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (/^#[0-9a-fA-F]{6}$/.test(v)) setBgColor(v);
+                          }}
+                          className="flex-1 text-xs font-mono px-2 py-1 border border-gray-200 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-      {/* Background Color */}
-      <div>
-        <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5 block">
-          Background Color
-        </label>
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-2.5">
-          <div className="flex flex-wrap gap-1.5">
-            {["#E5C840","#F4F5F7","#0F172A","#1E3A5F","#14532D","#7C3AED","#DC2626","#EA580C","#ffffff","#111111"].map((c) => (
-              <button
-                key={c}
-                type="button"
-                title={c}
-                onClick={() => setBgColor(c)}
-                style={{ background: c }}
-                className={`w-7 h-7 rounded-md flex-shrink-0 transition-transform duration-100 border-2 hover:scale-110 ${
-                  bgColor === c
-                    ? "border-gray-900 scale-110"
-                    : c === "#ffffff"
-                      ? "border-gray-300"
-                      : "border-transparent"
-                }`}
-              />
-            ))}
-          </div>
-          <div className="border-t border-gray-200 pt-2.5 flex items-center gap-2">
-            <label
-              className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer flex-shrink-0 overflow-hidden relative"
-              style={{ background: bgColor }}
-            >
-              <input
-                type="color"
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
-                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-              />
-            </label>
-            <span className="text-[11px] text-gray-400">Custom</span>
-            <input
-              type="text"
-              value={bgColor}
-              maxLength={7}
-              onChange={(e) => {
-                const v = e.target.value;
-                if (/^#[0-9a-fA-F]{6}$/.test(v)) setBgColor(v);
-              }}
-              className="flex-1 text-xs font-mono px-2 py-1 border border-gray-200 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-400"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Text Color */}
-      <div>
-        <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5 block">
-          Text Color
-        </label>
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-2.5">
-          <div className="flex flex-wrap gap-1.5">
-            {["#1A1000","#0F172A","#ffffff","#F9FAFB","#FBBF24","#6EE7B7","#93C5FD","#FCA5A5","#111827","#374151"].map((c) => (
-              <button
-                key={c}
-                type="button"
-                title={c}
-                onClick={() => setTextColor(c)}
-                style={{ background: c }}
-                className={`w-7 h-7 rounded-md flex-shrink-0 transition-transform duration-100 border-2 hover:scale-110 ${
-                  textColor === c
-                    ? "border-gray-900 scale-110"
-                    : c === "#ffffff"
-                      ? "border-gray-300"
-                      : "border-transparent"
-                }`}
-              />
-            ))}
-          </div>
-          <div className="border-t border-gray-200 pt-2.5 flex items-center gap-2">
-            <label
-              className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer flex-shrink-0 overflow-hidden relative"
-              style={{ background: textColor }}
-            >
-              <input
-                type="color"
-                value={textColor}
-                onChange={(e) => setTextColor(e.target.value)}
-                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-              />
-            </label>
-            <span className="text-[11px] text-gray-400">Custom</span>
-            <input
-              type="text"
-              value={textColor}
-              maxLength={7}
-              onChange={(e) => {
-                const v = e.target.value;
-                if (/^#[0-9a-fA-F]{6}$/.test(v)) setTextColor(v);
-              }}
-              className="flex-1 text-xs font-mono px-2 py-1 border border-gray-200 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-400"
-            />
-          </div>
-        </div>
-      </div>
-
-    </div>
-    <p className="text-[10px] text-gray-400">
-      Colors reflect live on the video preview.
-    </p>
-  </div>
-)}
+                  {/* Text Color */}
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5 block">
+                      Text Color
+                    </label>
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-2.5">
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          "#1A1000",
+                          "#0F172A",
+                          "#ffffff",
+                          "#F9FAFB",
+                          "#FBBF24",
+                          "#6EE7B7",
+                          "#93C5FD",
+                          "#FCA5A5",
+                          "#111827",
+                          "#374151",
+                        ].map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            title={c}
+                            onClick={() => setTextColor(c)}
+                            style={{ background: c }}
+                            className={`w-7 h-7 rounded-md flex-shrink-0 transition-transform duration-100 border-2 hover:scale-110 ${
+                              textColor === c
+                                ? "border-gray-900 scale-110"
+                                : c === "#ffffff"
+                                  ? "border-gray-300"
+                                  : "border-transparent"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="border-t border-gray-200 pt-2.5 flex items-center gap-2">
+                        <label
+                          className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer flex-shrink-0 overflow-hidden relative"
+                          style={{ background: textColor }}
+                        >
+                          <input
+                            type="color"
+                            value={textColor}
+                            onChange={(e) => setTextColor(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                        </label>
+                        <span className="text-[11px] text-gray-400">
+                          Custom
+                        </span>
+                        <input
+                          type="text"
+                          value={textColor}
+                          maxLength={7}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (/^#[0-9a-fA-F]{6}$/.test(v)) setTextColor(v);
+                          }}
+                          className="flex-1 text-xs font-mono px-2 py-1 border border-gray-200 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[10px] text-gray-400">
+                  Colors reflect live on the video preview.
+                </p>
+              </div>
+            )}
             {/* CTA */}
             <button
               onClick={handleSend}

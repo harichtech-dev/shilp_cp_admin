@@ -125,6 +125,46 @@ const Page = () => {
           <p className="text-sm text-gray-500 mt-1">
             Upload and manage image templates for WhatsApp campaigns
           </p>
+
+          {/* SIZE NOTE */}
+          <div className="flex items-stretch gap-0 border border-gray-200 rounded-lg overflow-hidden w-full mt-2 bg-white">
+            <div className="w-1 bg-blue-500 flex-shrink-0" />
+            <div className="flex flex-col gap-1.5 px-3.5 py-2.5 bg-white">
+              {/* Vertical */}
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-medium text-gray-400 w-16 shrink-0">
+                  Vertical
+                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {["512×640px", "606×606px"].map((size) => (
+                    <span
+                      key={size}
+                      className="text-[11px] font-medium text-gray-700 bg-gray-100 border border-gray-200 rounded px-2 py-0.5"
+                    >
+                      {size}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Horizontal */}
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-medium text-gray-400 w-16 shrink-0">
+                  Horizontal
+                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {["512×288px"].map((size) => (
+                    <span
+                      key={size}
+                      className="text-[11px] font-medium text-gray-700 bg-gray-100 border border-gray-200 rounded px-2 py-0.5"
+                    >
+                      {size}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Upload Button */}
