@@ -23,7 +23,7 @@ export default function VideoTemplatePage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [watiTemplateName, setWatiTemplateName] = useState("");
+  const [watiTemplateName, setWatiTemplateName] = useState("property_video_share");
 
   const [file, setFile] = useState<File | null>(null);
   const [layout, setLayout] = useState(1);

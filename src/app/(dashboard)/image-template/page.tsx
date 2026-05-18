@@ -23,7 +23,7 @@ const Page = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showModal, setShowModal] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [templateName, setTemplateName] = useState("");
+  const [templateName, setTemplateName] = useState("property_details_share");
 
   // 🔹 Fetch Templates
   const fetchTemplates = async () => {
