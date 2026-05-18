@@ -60,7 +60,7 @@ export const createUser = async (data: {
 // ✅ GET single user (you Don&apos;t have this yet → reuse list)
 export const getUserById = async (_id: string) => {
   const res = await api.get(`/users/${_id}`);
-  console.log("getUserById response:", res.data);
+  // console.log("getUserById response:", res.data);
   return res.data.data;
 };
 

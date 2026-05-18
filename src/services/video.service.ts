@@ -28,13 +28,19 @@ export const uploadVideoTemplate = async (
 export const sendBulkVideo = async ({
   templateId,
   platform,
+  bgColor,
+  textColor,
 }: {
   templateId: string;
   platform: string;
+  bgColor?: string;
+  textColor?: string;
 }) => {
   const res = await api.post("/videos/send-bulk", {
     templateId,
     platform,
+    bgColor,
+    textColor,
   });
 
   return res.data;
@@ -47,11 +53,17 @@ export const deleteVideoTemplate = async (id: string) => {
 // preview video
 export const previewVideo = async ({
   templateId,
+  bgColor,
+  textColor,
 }: {
   templateId: string;
+  bgColor?: string;
+  textColor?: string;
 }) => {
   const res = await api.post("/videos/preview", {
     templateId,
+    bgColor,
+    textColor,
   });
 
   return res.data;
