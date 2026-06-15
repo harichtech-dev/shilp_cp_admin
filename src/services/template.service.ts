@@ -28,11 +28,20 @@ export const deleteTemplate = async (id: string) => {
 
 export const previewImage = async ({
   templateId,
+  bgColor,
+  textColor,
+  nameColor,
 }: {
   templateId: string;
+  bgColor?: string;
+  textColor?: string;
+  nameColor?: string;
 }) => {
   const res = await api.post("/whatsapp/preview-image", {
     templateId,
+    bgColor,
+    textColor,
+    nameColor,
   });
 
   return res.data;

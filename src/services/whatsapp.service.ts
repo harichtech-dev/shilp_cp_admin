@@ -28,13 +28,22 @@ import { api } from "./api";
 export const sendBulkImage = async ({
   templateId,
   platform,
+  bgColor,
+  textColor,
+  nameColor,
 }: {
   templateId: string;
   platform: string;
+  bgColor?: string;
+  textColor?: string;
+  nameColor?: string;
 }) => {
   const res = await api.post("/whatsapp/send-bulk", {
     templateId,
     platform,
+    bgColor,
+    textColor,
+    nameColor,
   });
   return res.data;
 };
