@@ -57,7 +57,7 @@ const Login = () => {
       <div className="hidden lg:flex lg:flex-[1.2] relative overflow-hidden bg-black">
         <div className="absolute inset-0 flex items-center justify-center z-10">
           <Image
-            src="/1709012973-logo.webp"
+            src="/shilp identity-white.png"
             alt="logo"
             width={320}
             height={100}
