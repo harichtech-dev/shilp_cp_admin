@@ -133,7 +133,11 @@ export default function SendContent() {
           setTemplate(tmpl);
 
           setPreviewLoading(true);
-          const preview = await previewImage({ templateId });
+          const preview = await previewImage({
+            templateId,
+            bgColor,
+            textColor,
+          });
           if (preview.success) setPreviewUrl(preview.publicUrl || preview.url);
           setPreviewLoading(false);
         }
@@ -152,22 +156,41 @@ export default function SendContent() {
   // ─── DEBOUNCED: re-fetch preview whenever colors change (video only) ───────
   const refreshPreview = useCallback(
     async (bg: string, text: string) => {
-      if (!videoTemplateId) return; // images don't support color customisation
+      if (!videoTemplateId && !templateId) return; 
       setPreviewLoading(true);
       try {
-        const preview = await previewVideo({
-          templateId: videoTemplateId,
-          bgColor: bg,
-          textColor: text,
-        });
-        if (preview.success) setPreviewUrl(preview.url);
+        // VIDEO
+        if (videoTemplateId) {
+          const preview = await previewVideo({
+            templateId: videoTemplateId,
+            bgColor: bg,
+            textColor: text,
+          });
+
+          if (preview.success) {
+            setPreviewUrl(preview.url);
+          }
+        }
+
+        // IMAGE
+        if (templateId) {
+          const preview = await previewImage({
+            templateId,
+            bgColor: bg,
+            textColor: text,
+          });
+
+          if (preview.success) {
+            setPreviewUrl(preview.publicUrl || preview.url);
+          }
+        }
       } catch (err) {
         console.error("Preview refresh failed:", err);
       } finally {
         setPreviewLoading(false);
       }
     },
-    [videoTemplateId],
+    [videoTemplateId, templateId],
   );
 
   // Watch bgColor
@@ -218,6 +241,8 @@ export default function SendContent() {
         res = await sendBulkImage({
           templateId,
           platform,
+          bgColor,
+          textColor,
         });
       }
 
@@ -487,7 +512,7 @@ export default function SendContent() {
             )} */}
 
             {/* Color Customization — only shown for video templates */}
-            {videoTemplateId && (
+            {(videoTemplateId || templateId) && (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   {/* Background Color */}
@@ -619,7 +644,7 @@ export default function SendContent() {
                   </div>
                 </div>
                 <p className="text-[10px] text-gray-400">
-                  Colors reflect live on the video preview.
+                  Colors reflect live on the preview.
                 </p>
               </div>
             )}

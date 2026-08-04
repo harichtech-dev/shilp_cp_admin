@@ -609,12 +609,13 @@ export default function ChannelProviderRegistration() {
                     <p className="text-xs text-white/35 leading-relaxed">
                       {f.desc}
                     </p>
+                    
                   </div>
                 </div>
               ))}
             </div>
           </div>
-
+          
           <p className="relative z-10 text-[11px] text-white/20 mt-8 lg:mt-4">
             © 2026 SHILP. All rights reserved.
           </p>
