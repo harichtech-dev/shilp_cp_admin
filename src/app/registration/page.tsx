@@ -545,7 +545,7 @@ export default function ChannelProviderRegistration() {
           <div className="relative z-10">
             <div className="inline-flex rounded-xl px-3 py-2">
               <Image
-                src="/1709012973-logo.webp"
+                src="/shilp identity-white.png"
                 alt="Shilp"
                 width={130}
                 height={50}
@@ -558,22 +558,21 @@ export default function ChannelProviderRegistration() {
           <div className="relative z-10 mt-10 lg:mt-0">
             {/* Headline */}
             <h1 className="text-3xl sm:text-4xl font-bold leading-tight mb-4 font-sans p-3">
-              Get Brochures &
-              <br />
-              <span className="text-white/55">Project Videos</span>
+             To Growth Partners
+
+             
             </h1>
 
             <p className="text-sm text-white/40 leading-relaxed mb-7 font-light">
-              Register to receive latest brochures, walkthrough videos, project
-              updates and exclusive real estate information directly.
+             Get customized reels and creatives delivered directly for your ready reference. Only one time data required.
             </p>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-2 mb-6">
               {[
-                { n: "50+", l: "Projects" },
-                { n: "24/7", l: "Access" },
-                { n: "Instant", l: "Delivery" },
+                { n: "55+", l: "Projects" },
+                { n: "22+", l: "Years of Experience" },
+                { n: "20+", l: "Million Sqr. feet" },
               ].map((s) => (
                 <div
                   key={s.l}
@@ -590,11 +589,6 @@ export default function ChannelProviderRegistration() {
             {/* Feature cards — hidden on tablet, shown on desktop */}
             <div className="hidden lg:flex flex-col gap-2">
               {[
-                {
-                  Icon: Shield,
-                  title: "Instant Access",
-                  desc: "Get brochures and project videos instantly after registration.",
-                },
                 {
                   Icon: TrendingUp,
                   title: "Latest Updates",
