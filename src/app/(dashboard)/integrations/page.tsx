@@ -8,6 +8,7 @@ import {
 } from "@/services/integration.service";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useRequireAdmin } from "@/hooks/useRequireAdmin";
 
 interface IntegrationField {
   key: string;
@@ -34,6 +35,7 @@ export default function IntegrationsPage() {
   const [loading, setLoading] = useState(true);
   const [savingSlug, setSavingSlug] = useState<string | null>(null);
   const router = useRouter();
+  const canAccess = useRequireAdmin();
 
   const loadIntegrations = async () => {
   const data = await getIntegrations();
@@ -98,6 +100,8 @@ export default function IntegrationsPage() {
       console.error(err);
     }
   };
+
+  if (!canAccess) return <div className="p-6">Loading...</div>;
 
   if (loading) return <div className="p-6">Loading...</div>;
 

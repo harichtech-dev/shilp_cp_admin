@@ -558,14 +558,13 @@ export default function ChannelProviderRegistration() {
           <div className="relative z-10 mt-10 lg:mt-0">
             {/* Headline */}
             <h1 className="text-3xl sm:text-4xl font-bold leading-tight mb-4 font-sans p-3">
-              To Growth Partners
-              
-      
+             To Growth Partners
+
+             
             </h1>
 
             <p className="text-sm text-white/40 leading-relaxed mb-7 font-light">
-              Get customized reels and creatives delivered directly for your ready reference. Only one time data required.
-
+             Get customized reels and creatives delivered directly for your ready reference. Only one time data required.
             </p>
 
             {/* Stats */}
@@ -590,7 +589,6 @@ export default function ChannelProviderRegistration() {
             {/* Feature cards — hidden on tablet, shown on desktop */}
             <div className="hidden lg:flex flex-col gap-2">
               {[
-                
                 {
                   Icon: TrendingUp,
                   title: "Latest Updates",
