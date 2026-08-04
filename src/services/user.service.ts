@@ -84,7 +84,7 @@ export const updateUser = async (_id: string, data: UpdateUserPayload) => {
   return res.data;
 };
 
-export const handleSatus = async (_id: string, status: number) => {
+export const handleStats = async (_id: string, status: number) => {
   const newStatus = status === 1 ? 0 : 1;
   const res = await api.patch(`/users/${_id}/status`, { status: newStatus });
   return res.data;

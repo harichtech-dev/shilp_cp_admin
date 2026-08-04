@@ -12,6 +12,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { ChevronLeft } from "lucide-react";
+import { useAuthStore } from "@/store/auth.store";
 type Props = {
   closeSidebar?: () => void;
   collapsed?: boolean;
@@ -26,6 +27,7 @@ export default function Sidebar({
   const router = useRouter();
   const pathname = usePathname();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const user = useAuthStore((s) => s.user);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -128,16 +130,18 @@ export default function Sidebar({
             {!collapsed && <span>Video Templates</span>}
           </Link>
 
-          <Link
-            href="/integrations"
-            onClick={closeSidebar}
-            className={`${linkClass("/integrations")} flex items-center ${
-              collapsed ? "justify-center px-0" : "gap-3 px-4"
-            }`}
-          >
-            <Plug size={18} />
-            {!collapsed && <span>Manage Integrations</span>}
-          </Link>
+          {user?.role === "admin" && (
+            <Link
+              href="/integrations"
+              onClick={closeSidebar}
+              className={`${linkClass("/integrations")} flex items-center ${
+                collapsed ? "justify-center px-0" : "gap-3 px-4"
+              }`}
+            >
+              <Plug size={18} />
+              {!collapsed && <span>Manage Integrations</span>}
+            </Link>
+          )}
         </nav>
 
         {/* Logout */}

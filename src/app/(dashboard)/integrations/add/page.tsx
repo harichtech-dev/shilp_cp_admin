@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { api } from "@/services/api";
 import { useRouter } from "next/navigation";
+import { useRequireAdmin } from "@/hooks/useRequireAdmin";
 
 export default function AddIntegrationPage() {
   const router = useRouter();
+  const canAccess = useRequireAdmin();
   const [name, setName] = useState("");
 
   const handleCreate = async () => {
@@ -42,6 +44,8 @@ export default function AddIntegrationPage() {
       console.error(err);
     }
   };
+
+  if (!canAccess) return <div className="p-6">Loading...</div>;
 
   return (
     <div className="p-6 space-y-4">

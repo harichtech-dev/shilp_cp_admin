@@ -6,4 +6,5 @@ export interface User {
   phone?: string;
   company?: string;
   logo?: string;
+  role?: string;
 }

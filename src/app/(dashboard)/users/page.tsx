@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { getUsers, deleteUser, handleSatus } from "@/services/user.service";
+import { getUsers, deleteUser, handleStats } from "@/services/user.service";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -13,6 +13,7 @@ interface User {
   phone: string;
   logo?: string;
   status: number;
+  createdAt: string;
 }
 
 interface Pagination {
@@ -20,6 +21,8 @@ interface Pagination {
   total?: number;
   currentPage?: number;
 }
+
+
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -29,6 +32,50 @@ export default function UsersPage() {
     pages: 0,
   });
   const router = useRouter();
+
+  const downloadCSV = () => {
+  const headers = [
+    "ID",
+    "Name",
+    "Email",
+    "Phone",
+    "Status",
+    "Register Date",
+  ];
+
+  const rows = users.map((user, index) => [
+    index + 1,
+    user.name,
+    user.email,
+    user.phone,
+    user.status === 1 ? "Active" : "Inactive",
+    new Date(user.createdAt).toLocaleDateString(),
+  ]);
+
+  const csvContent = [
+    headers,
+    ...rows,
+  ]
+    .map((row) =>
+      row
+        .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
+        .join(",")
+    )
+    .join("\n");
+
+  const blob = new Blob([csvContent], {
+    type: "text/csv;charset=utf-8;",
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `users-${new Date().toISOString().split("T")[0]}.csv`;
+  link.click();
+
+  URL.revokeObjectURL(url);
+};
 
   const fetchUsers = useCallback(async () => {
     const res = await getUsers({ page, search });
@@ -68,7 +115,7 @@ export default function UsersPage() {
 
   const handleStatus = async (_id: string, currentStatus: number) => {
     try {
-      const res = await handleSatus(_id, currentStatus);
+      const res = await handleStats(_id, currentStatus);
       if (res.success) {
         toast.success("Status updated successfully");
         fetchUsers();
@@ -87,13 +134,20 @@ export default function UsersPage() {
         <h1 className="text-2xl font-semibold text-gray-900">Users</h1>
 
         <div className="flex gap-3">
-          <button
-            onClick={() => router.push("/users/add")}
-            className="bg-primary text-primary-foreground px-5 py-2 rounded-lg shadow hover:scale-105 transition"
-          >
-            + Add User
-          </button>
-        </div>
+  <button
+    onClick={downloadCSV}
+    className="bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition"
+  >
+    Download CSV
+  </button>
+
+  <button
+    onClick={() => router.push("/users/add")}
+    className="bg-primary text-primary-foreground px-5 py-2 rounded-lg shadow hover:scale-105 transition"
+  >
+    + Add User
+  </button>
+</div>
       </div>
 
       {/* SEARCH */}
@@ -114,6 +168,7 @@ export default function UsersPage() {
           {/* Header */}
           <thead className="bg-gray-950 text-white">
             <tr>
+              <th className="px-3 md:px-6 py-3 text-left font-semibold">ID</th>
               <th className="px-3 md:px-6 py-3 text-left font-semibold">
                 User
               </th>
@@ -125,6 +180,9 @@ export default function UsersPage() {
               </th>
               <th className="px-3 md:px-6 py-3 text-center font-semibold">
                 Email
+              </th>
+              <th className="px-3 md:px-6 py-3 text-center font-semibold">
+                Register Date
               </th>
               <th className="px-3 md:px-6 py-3 text-center font-semibold">
                 Status
@@ -144,6 +202,9 @@ export default function UsersPage() {
                   index % 2 === 0 ? "bg-white" : "bg-gray-50"
                 } hover:bg-gray-100 transition`}
               >
+                <td className="px-3 md:px-6 py-3 text-center font-medium">
+                  {(page - 1) * 10 + index + 1}
+                </td>
                 {/* User */}
                 <td className="px-3 md:px-6 py-3">
                   <div className="flex items-center gap-3">
@@ -180,6 +241,11 @@ export default function UsersPage() {
                 {/* EMAIL */}
                 <td className="px-3 md:px-6 py-3 text-center text-gray-700">
                   {user.email}
+                </td>
+
+                {/* REGISTER DATE */}
+                <td className="px-3 md:px-6 py-3 text-center text-gray-700">
+                  {new Date(user.createdAt).toLocaleDateString()}
                 </td>
 
                 {/* STATUS */}
