@@ -23,7 +23,7 @@ export default function VideoTemplatePage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [watiTemplateName, setWatiTemplateName] = useState("property_video_share");
+  const [watiTemplateName, setWatiTemplateName] = useState("property_video_share_one");
 
   const [file, setFile] = useState<File | null>(null);
   const [layout, setLayout] = useState(1);
@@ -330,7 +330,7 @@ export default function VideoTemplatePage() {
             </p>
             <input
               type="text"
-              placeholder="e.g. property_video_share"
+              placeholder="e.g. property_video_share_one"
               value={watiTemplateName}
               onChange={(e) => setWatiTemplateName(e.target.value)}
               className="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
