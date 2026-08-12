@@ -23,7 +23,7 @@ const Page = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showModal, setShowModal] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [templateName, setTemplateName] = useState("property_details_share");
+  const [templateName, setTemplateName] = useState("property_details_share_one");
 
   // 🔹 Fetch Templates
   const fetchTemplates = async () => {
@@ -262,7 +262,7 @@ const Page = () => {
             </p>
             <input
               type="text"
-              placeholder="e.g. property_details_share"
+              placeholder="e.g. property_details_share_one"
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
               className="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"

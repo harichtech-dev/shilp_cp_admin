@@ -27,6 +27,7 @@ export const getUsers = async ({
 
 export const getAllUsers = async () => {
   const res = await api.get("/users/all");
+  console.log(res)
   return res.data;
 };
 

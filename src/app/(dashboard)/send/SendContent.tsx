@@ -11,7 +11,7 @@ import {
 import { sendBulkImage } from "@/services/whatsapp.service";
 import Link from "next/link";
 import { useCallback, useEffect, useState, useRef } from "react";
-import { getIntegrations } from "@/services/integration.service";
+import { getIntegrationStatus } from "@/services/integration.service";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -87,7 +87,7 @@ export default function SendContent() {
             getAllUsers(),
             getTemplates(),
             getVideoTemplates(),
-            getIntegrations(),
+            getIntegrationStatus(),
           ],
         );
 

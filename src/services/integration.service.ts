@@ -7,6 +7,12 @@ export const getIntegrations = async () => {
   return res.data;
 };
 
+// ✅ Get connection status only (safe for any logged-in role, no credentials)
+export const getIntegrationStatus = async () => {
+  const res = await api.get("/integrations/status");
+  return res.data;
+};
+
 // ✅ Get single integration (optional)
 export const getIntegration = async (slug: string) => {
   const res = await api.get(`/integrations/${slug}`);
