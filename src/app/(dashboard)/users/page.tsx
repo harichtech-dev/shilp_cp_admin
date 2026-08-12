@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { getUsers, deleteUser, handleStats } from "@/services/user.service";
+import {
+  getUsers,
+  deleteUser,
+  handleStats,
+  updateAllUsersStatus,
+} from "@/services/user.service";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -31,6 +36,7 @@ export default function UsersPage() {
   const [pagination, setPagination] = useState<Pagination>({
     pages: 0,
   });
+  const [nextBulkStatus, setNextBulkStatus] = useState(1); // 1 = next click activates all, 0 = next click deactivates all
   const router = useRouter();
 
   const downloadCSV = () => {
@@ -127,6 +133,33 @@ export default function UsersPage() {
     }
   };
 
+  const handleBulkStatus = () => {
+    const status = nextBulkStatus;
+    const label = status === 1 ? "activate" : "deactivate";
+    const toastId = toast(`Are you sure you want to ${label} ALL users?`, {
+      action: {
+        label: status === 1 ? "Activate All" : "Deactivate All",
+        onClick: async () => {
+          try {
+            toast.dismiss(toastId);
+
+            const res = await updateAllUsersStatus(status);
+
+            if (res.success) {
+              toast.success(`All users ${label}d successfully`);
+              setNextBulkStatus(status === 1 ? 0 : 1);
+              fetchUsers();
+            } else {
+              toast.error(`Failed to ${label} all users`);
+            }
+          } catch {
+            toast.error(`Failed to ${label} all users`);
+          }
+        },
+      },
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -139,6 +172,17 @@ export default function UsersPage() {
     className="bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition"
   >
     Download CSV
+  </button>
+
+  <button
+    onClick={handleBulkStatus}
+    className={`text-white px-5 py-2 rounded-lg shadow transition ${
+      nextBulkStatus === 1
+        ? "bg-green-600 hover:bg-green-700"
+        : "bg-red-600 hover:bg-red-700"
+    }`}
+  >
+    {nextBulkStatus === 1 ? "Activate All" : "Deactivate All"}
   </button>
 
   <button

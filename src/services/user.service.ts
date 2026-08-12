@@ -90,3 +90,8 @@ export const handleStats = async (_id: string, status: number) => {
   const res = await api.patch(`/users/${_id}/status`, { status: newStatus });
   return res.data;
 };
+
+export const updateAllUsersStatus = async (status: number) => {
+  const res = await api.patch("/users/status/bulk", { status });
+  return res.data;
+};
