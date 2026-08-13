@@ -750,7 +750,7 @@ export default function SendContent() {
                 </svg>
               ),
               label: "Avg delivery",
-              sub: "Under 30 seconds",
+              sub: "Under 30 minutes",
             },
           ].map(({ icon, label, sub }) => (
             <div key={label} className="flex items-center gap-2.5">
@@ -831,6 +831,36 @@ export default function SendContent() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {sending && (
+        <div className="fixed inset-0 bg-black/70 z-9999 flex flex-col items-center justify-center gap-4">
+          <svg
+            className="animate-spin w-10 h-10 text-white"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="3"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            />
+          </svg>
+          <p className="text-white text-sm font-semibold tracking-wide">
+            Sending campaign… {sentPct}%
+          </p>
+          <p className="text-white/60 text-xs">
+            Please don&apos;t navigate away until this completes.
+          </p>
         </div>
       )}
     </div>

@@ -27,8 +27,6 @@ interface Pagination {
   currentPage?: number;
 }
 
-
-
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
@@ -36,52 +34,54 @@ export default function UsersPage() {
   const [pagination, setPagination] = useState<Pagination>({
     pages: 0,
   });
-  const [nextBulkStatus, setNextBulkStatus] = useState(1); // 1 = next click activates all, 0 = next click deactivates all
   const router = useRouter();
 
+  // 1 = next click activates all, 0 = next click deactivates all
+  const allActive = users.length > 0 && users.every((user) => user.status === 1);
+  const nextBulkStatus = allActive ? 0 : 1;
+
   const downloadCSV = () => {
-  const headers = [
-    "ID",
-    "Name",
-    "Email",
-    "Phone",
-    "Status",
-    "Register Date",
-  ];
+    const headers = ["ID", "Name", "Email", "Phone", "Status", "Register Date"];
 
-  const rows = users.map((user, index) => [
-    index + 1,
-    user.name,
-    user.email,
-    user.phone,
-    user.status === 1 ? "Active" : "Inactive",
-    new Date(user.createdAt).toLocaleDateString(),
-  ]);
+    const rows = users.map((user, index) => [
+      index + 1,
+      user.name,
+      user.email,
+      user.phone,
+      user.status === 1 ? "Active" : "Inactive",
+      new Date(user.createdAt).toLocaleDateString(),
+    ]);
 
-  const csvContent = [
-    headers,
-    ...rows,
-  ]
-    .map((row) =>
-      row
-        .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
-        .join(",")
-    )
-    .join("\n");
+    const csvContent = [headers, ...rows]
+      .map((row) =>
+        row
+          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
+          .join(","),
+      )
+      .join("\n");
 
-  const blob = new Blob([csvContent], {
-    type: "text/csv;charset=utf-8;",
-  });
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
 
-  const url = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
 
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `users-${new Date().toISOString().split("T")[0]}.csv`;
-  link.click();
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `users-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
 
-  URL.revokeObjectURL(url);
-};
+    URL.revokeObjectURL(url);
+  };
+
+  const copyRegistrationLink = async () => {
+    try {
+      await navigator.clipboard.writeText("https://cp.shilpgroup.com/registration");
+      toast.success("Registration link copied to clipboard");
+    } catch {
+      toast.error("Failed to copy registration link");
+    }
+  };
 
   const fetchUsers = useCallback(async () => {
     const res = await getUsers({ page, search });
@@ -147,7 +147,6 @@ export default function UsersPage() {
 
             if (res.success) {
               toast.success(`All users ${label}d successfully`);
-              setNextBulkStatus(status === 1 ? 0 : 1);
               fetchUsers();
             } else {
               toast.error(`Failed to ${label} all users`);
@@ -167,31 +166,38 @@ export default function UsersPage() {
         <h1 className="text-2xl font-semibold text-gray-900">Users</h1>
 
         <div className="flex gap-3">
-  <button
-    onClick={downloadCSV}
-    className="bg-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition"
-  >
-    Download CSV
-  </button>
+          <button
+            onClick={downloadCSV}
+            className="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+          >
+            Download CSV
+          </button>
 
-  <button
-    onClick={handleBulkStatus}
-    className={`text-white px-5 py-2 rounded-lg shadow transition ${
-      nextBulkStatus === 1
-        ? "bg-green-600 hover:bg-green-700"
-        : "bg-red-600 hover:bg-red-700"
-    }`}
-  >
-    {nextBulkStatus === 1 ? "Activate All" : "Deactivate All"}
-  </button>
+          <button
+            onClick={copyRegistrationLink}
+            className="bg-orange-600 text-white px-5 py-2 rounded-lg shadow hover:bg-orange-700 transition"
+          >
+            Copy Registration Link
+          </button>
 
-  <button
-    onClick={() => router.push("/users/add")}
-    className="bg-primary text-primary-foreground px-5 py-2 rounded-lg shadow hover:scale-105 transition"
-  >
-    + Add User
-  </button>
-</div>
+          <button
+            onClick={handleBulkStatus}
+            className={`text-white px-5 py-2 rounded-lg shadow transition ${
+              nextBulkStatus === 1
+                ? "bg-green-600 hover:bg-green-700"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
+          >
+            {nextBulkStatus === 1 ? "Activate All" : "Deactivate All"}
+          </button>
+
+          <button
+            onClick={() => router.push("/users/add")}
+            className="bg-primary text-primary-foreground px-5 py-2 rounded-lg shadow hover:scale-105 transition"
+          >
+            + Add User
+          </button>
+        </div>
       </div>
 
       {/* SEARCH */}
