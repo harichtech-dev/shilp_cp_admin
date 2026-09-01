@@ -19,19 +19,27 @@ interface Template {
 }
 
 export default function VideoTemplatePage() {
+  // State management - templates, loading, uploading
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [watiTemplateName, setWatiTemplateName] = useState("property_video_share_one");
+  
+  // Modal and form states
+  const [showModal, setShowModal] = useState(false); // WATI name enter karne ka modal
+  const [watiTemplateName, setWatiTemplateName] = useState("property_video_share_one"); // WATI template name
+  
+  // File and video configuration
+  const [file, setFile] = useState<File | null>(null); // Selected video file
+  const [layout, setLayout] = useState(1); // Video layout (1/2/3)
 
-  const [file, setFile] = useState<File | null>(null);
-  const [layout, setLayout] = useState(1);
+  const fileRef = useRef<HTMLInputElement>(null); // File input reference
 
-  const fileRef = useRef<HTMLInputElement>(null);
-
+  /**
+   * fetchTemplates - Backend se video templates fetch karte hain
+   */
   const fetchTemplates = async () => {
     try {
+      // API call - video templates
       const data = await getVideoTemplates();
       if (data.success) {
         setTemplates(data.data);
@@ -39,44 +47,67 @@ export default function VideoTemplatePage() {
     } catch (error) {
       console.error("Fetch error:", error);
     } finally {
+      // Loading complete
       setLoading(false);
     }
   };
 
+  /**
+   * useEffect - Component mount par templates load karte hain
+   */
   useEffect(() => {
-  const loadTemplates = async () => {
-    try {
-      const data = await getVideoTemplates();
+    const loadTemplates = async () => {
+      try {
+        // Backend se video templates fetch karte hain
+        const data = await getVideoTemplates();
 
-      if (data.success) {
-        setTemplates(data.data);
+        if (data.success) {
+          setTemplates(data.data);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        // Loading complete
+        setLoading(false);
       }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  void loadTemplates();
-}, []);
+    void loadTemplates();
+  }, []);
 
-  // ✅ Step 1 - File selected → show modal
+  /**
+   * handleFileSelect - Step 1: Video file select hone par modal show karte hain
+   * Modal mein WATI template name + layout selection hota hai
+   */
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // File input se pehla file select karte hain
     const selected = e.target.files?.[0];
     if (!selected) return;
+    
+    // File ko state mein store karte hain
     setFile(selected);
+    // Modal show karte hain - admin WATI name enter kar sakta hai
     setShowModal(true);
   };
 
-  // ✅ Step 2 - Modal confirmed → upload with providers
+  /**
+   * handleConfirmUpload - Step 2: Modal confirmation mein video upload start hota hai
+   * Video ko WATI provider ke saath + layout info
+   */
   const handleConfirmUpload = async () => {
+    // Validation
     if (!file || !watiTemplateName) return;
+    
+    // Modal close
     setShowModal(false);
+    // Loading toast show karte hain
     const toastId = toast.loading("Uploading video...");
 
     try {
+      // Upload state on
       setUploading(true);
+      
+      // Provider configuration - WATI ke saath
       const providers = [
         {
           platform: "wati",
@@ -85,10 +116,13 @@ export default function VideoTemplatePage() {
         },
       ];
 
+      // Backend API - file, layout, providers ke saath upload
       const res = await uploadVideoTemplate(file, layout, providers);
 
       if (res.success) {
+        // Success message
         toast.success("Video uploaded successfully", { id: toastId });
+        // Templates list refresh karte hain
         fetchTemplates();
       } else {
         toast.error(res.message || "Upload failed", { id: toastId });
@@ -97,23 +131,33 @@ export default function VideoTemplatePage() {
       console.error(err);
       toast.error("Upload failed", { id: toastId });
     } finally {
+      // Upload state off
       setUploading(false);
+      // Form reset
       setFile(null);
       setWatiTemplateName("");
+      // File input clear
       if (fileRef.current) fileRef.current.value = "";
     }
   };
 
-  // 🔹 Delete
+  /**
+   * handleDelete - Video template ko delete karte hain with confirmation
+   */
   const handleDelete = (id: string) => {
+    // Confirmation toast
     const toastId = toast("Are you sure you want to delete?", {
       action: {
         label: "Delete",
         onClick: async () => {
           try {
+            // Dialog close
             toast.dismiss(toastId);
+            // Backend API - delete
             await deleteVideoTemplate(id);
+            // Success message
             toast.success("Template deleted");
+            // Refresh list
             fetchTemplates();
           } catch (err) {
             toast.error("Delete failed");
