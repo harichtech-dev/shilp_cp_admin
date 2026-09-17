@@ -2,7 +2,7 @@ import { IntegrationConfig } from "@/types/integration";
 import { api } from "./api";
 
 /**
- * GET INTEGRATIONS - Sab available integrations ki list
+ * GET INTEGRATIONS - List all available integrations.
  * Output: Integrations with all fields
  */
 export const getIntegrations = async () => {
@@ -11,9 +11,8 @@ export const getIntegrations = async () => {
 };
 
 /**
- * GET INTEGRATION STATUS - Sab integrations ka connection status check
- * Output: Slug, name, status only (credentials nahi bhejta)
- * Ye safe hai kyunki sensitive data nahi bhejta
+ * GET INTEGRATION STATUS - Return the connection status of all integrations.
+ * Output: Slug, name, and status only; credentials are excluded.
  */
 export const getIntegrationStatus = async () => {
   const res = await api.get("/integrations/status");
@@ -21,8 +20,8 @@ export const getIntegrationStatus = async () => {
 };
 
 /**
- * GET INTEGRATION - Specific integration ki details
- * Input: slug (integration ka unique identifier)
+ * GET INTEGRATION - Return details for one integration.
+ * Input: slug (the integration's unique identifier)
  * Output: Full integration with fields configuration
  */
 export const getIntegration = async (slug: string) => {
@@ -31,10 +30,10 @@ export const getIntegration = async (slug: string) => {
 };
 
 /**
- * UPDATE INTEGRATION CONFIG - Integration ke credentials update karna
+ * UPDATE INTEGRATION CONFIG - Update integration credentials.
  * Input: slug, config (apiUrl, jwtToken, channelNumber etc.)
- * Use: Jab user WATI/INTERAKT account connect karna chahta hai
- * Process: Backend WATI API ko call kar ke verify karta hai
+ * Use: Connect a WATI or INTERAKT account.
+ * Process: The backend verifies the credentials through the provider API.
  */
 export const updateIntegrationConfig = async (
   slug: string, 
@@ -45,9 +44,9 @@ export const updateIntegrationConfig = async (
 };
 
 /**
- * UPDATE INTEGRATION STATUS - Integration ko enable/disable karna
- * Input: slug, status ("connected" ya "disconnected")
- * Use: Admin integration ko on/off kar sakte hain
+ * UPDATE INTEGRATION STATUS - Enable or disable an integration.
+ * Input: slug, status ("connected" or "disconnected")
+ * Use: Allow administrators to control integration availability.
  */
 export const updateIntegrationStatus = async (
   slug: string,

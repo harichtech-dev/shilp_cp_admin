@@ -5,11 +5,11 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem("token"); // Local storage se token nikala
+  const token = localStorage.getItem("token"); // Read the token from localStorage.
   
   if (token) {
-    config.headers = config.headers ?? {}; // Header set kar rahe hain
-    config.headers.Authorization = `Bearer ${token}`; // Token ko Bearer format mein add kar rahe hain
+    config.headers = config.headers ?? {}; // Initialize request headers.
+    config.headers.Authorization = `Bearer ${token}`; // Add the Bearer token.
   }
   return config;
 });

@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner"; // Toast notifications ke liye
+import { Toaster } from "@/components/ui/sonner"; // Toast notifications.
 
 /**
- * FONTS - Google fonts import kar rahe hain
- * Geist Sans aur Geist Mono dono available hain
+ * FONTS - Import the Google font families used by the application.
  */
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 /**
- * METADATA - Browser tab mein title, description, favicon etc.
+ * METADATA - Browser tab title, description, and favicon.
  */
 export const metadata: Metadata = {
   title: "Image Delivery",
@@ -29,8 +28,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * ROOT LAYOUT COMPONENT - Puri app ka wrapper
- * Sab pages yahan ke children hote hain
+ * ROOT LAYOUT COMPONENT - Shared wrapper for all application pages.
  */
 export default function RootLayout({
   children,
@@ -46,9 +44,9 @@ export default function RootLayout({
         {children}
         
         {/* TOASTER - Global notification system */}
-        {/* Jab toast.success(), toast.error() etc. call hote hain to ye show hota hai */}
+          {/* Display notifications triggered by toast.success(), toast.error(), etc. */}
         <Toaster
-          position="top-right" // Top right corner mein show hoga
+          position="top-right" // Display notifications in the top-right corner.
           theme="dark" // Dark theme
           toastOptions={{
             classNames: {

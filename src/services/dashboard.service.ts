@@ -1,8 +1,8 @@
 import { api } from "./api";
 
 /**
- * DELIVERY VOLUME TYPE - Chart data ka structure
- * Labels mein dates, image/video arrays mein counts
+ * DELIVERY VOLUME TYPE - Structure of the chart data.
+ * Labels contain dates; image and video arrays contain counts.
  */
 export interface DeliveryVolume {
   labels: string[]; // Dates array - ["2026-05-08", "2026-05-09", ...]
@@ -29,9 +29,9 @@ export const getDashboardStats = async () => {
 };
 
 /**
- * GET DELIVERY VOLUME - Last N days ka message delivery count
- * Input: days (7, 14, ya 30)
- * Output: Chart ready data with labels aur counts
+ * GET DELIVERY VOLUME - Message delivery counts for the last N days.
+ * Input: days (7, 14, or 30).
+ * Output: Chart-ready data with labels and counts.
  */
 export const getDeliveryVolume = async (
   days: 7 | 14 | 30 = 7,
@@ -43,7 +43,7 @@ export const getDeliveryVolume = async (
 };
 
 /**
- * GET MONTHLY MESSAGES - Pore saal ka monthly breakdown
+ * GET MONTHLY MESSAGES - Monthly message breakdown for the year.
  * Output: Monthly data for graph display
  */
 export const getMonthlyMessages =

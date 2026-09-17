@@ -2,27 +2,27 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getProfile } from "@/services/auth.service"; // API se profile fetch karne ke liye
+import { getProfile } from "@/services/auth.service"; // Fetch the profile from the API.
 import { useAuthStore } from "@/store/auth.store"; // Auth state management
 
 export const useAuth = () => {
   const router = useRouter();
-  const setUser = useAuthStore((s) => s.setUser); // Zustand store se setUser function
+  const setUser = useAuthStore((s) => s.setUser); // Read the Zustand store action.
 
   useEffect(() => {
-    // Local storage se token nikalne ki koshish karte hain
+    // Read the token from localStorage.
     const token = localStorage.getItem("token");
 
     if (token) {
-      // Token ko cookie mein bhi store kar rahe hain (Next.js middleware ke liye)
+      // Mirror the token in a cookie for Next.js middleware.
       document.cookie = `token=${token}; path=/`;
 
-      // Backend se user profile fetch kar rahe hain
+      // Fetch the administrator profile from the backend.
       getProfile()
-        .then((res) => setUser(res.data)) // Successful to user data store kar do
-        .catch(() => router.push("/login")); // Error ho to login page par jao
+        .then((res) => setUser(res.data)) // Store the returned user data.
+        .catch(() => router.push("/login")); // Redirect to login when the request fails.
     } else {
-      // Agar token nahi hai to login page par jao
+      // Redirect to login when no token is available.
       router.push("/login");
     }
   }, [router, setUser]);

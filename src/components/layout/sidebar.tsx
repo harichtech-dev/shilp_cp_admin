@@ -24,34 +24,31 @@ export default function Sidebar({
   collapsed,
   setCollapsed,
 }: Props) {
-  // Router navigation ke liye
+  // Router used for navigation.
   const router = useRouter();
-  // Current page path - highlight karne ke liye active link
+  // Current path used to highlight the active link.
   const pathname = usePathname();
-  // Logout confirmation dialog ka state
+  // Logout confirmation dialog state.
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  // Global store se user data - role check karne ke liye (admin-only links)
+  // User data from the global store for role-based links.
   const user = useAuthStore((s) => s.user);
 
   /**
-   * handleLogout - Admin ko logout karte hain
-   * Token ko remove karte hain localStorage se
-   * Login page par redirect karte hain
+  * handleLogout - Clear the session and redirect to the login page.
    */
   const handleLogout = () => {
-    // Token ko remove karte hain - ab protected routes accessible nahi honge
+    // Remove the token so protected routes are no longer accessible.
     localStorage.removeItem("token");
-    // Login page par redirect karte hain
+    // Redirect to the login page.
     router.push("/login");
   };
 
   /**
-   * linkClass - Navigation link ko styling dete hain
-   * Active link ko black background, inactive ko hover effect
+  * linkClass - Build styles for active and inactive navigation links.
    */
   const linkClass = (path: string) =>
     `flex items-center rounded-xl text-sm transition-all duration-200 py-3 ${
-      pathname === path // Current page check karte hain
+      pathname === path // Check whether this is the current page.
         ? "bg-black text-white font-medium" // Active - black background
         : "text-gray-500 hover:bg-gray-100 hover:text-black" // Inactive - hover effect
     }`;
@@ -71,9 +68,9 @@ export default function Sidebar({
               collapsed ? "justify-center" : "justify-between"
             }`}
           >
-            {/* Logo - Collapsed state mein sirf 'A' letter, expanded mein full text */}
+            {/* Show the initial when collapsed and the full label when expanded */}
             {collapsed ? (
-              // Collapsed state - sirf letter A dikhata hai, click karte hain to expand
+              // Collapsed state with an expand action.
               <button
                 onClick={() => setCollapsed?.(false)}
                 className="w-10 h-8 rounded-lg bg-black text-white flex items-center justify-center font-semibold text-sm"
@@ -81,7 +78,7 @@ export default function Sidebar({
                 A
               </button>
             ) : (
-              // Expanded state - full "Admin Panel" text + collapse button
+              // Expanded state with the full label and collapse action.
               <>
                 <Link href="/dashboard">
                   <div className="text-lg font-bold tracking-tight">
@@ -89,7 +86,7 @@ export default function Sidebar({
                   </div>
                 </Link>
 
-                {/* Collapse Button - Desktop only, sidebar ko minimize karte hain */}
+                {/* Minimize the sidebar on desktop */}
                 <button
                   onClick={() => setCollapsed?.(true)}
                   className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
@@ -114,7 +111,7 @@ export default function Sidebar({
             {!collapsed && <span>Dashboard</span>}
           </Link>
 
-          {/* Users Management Link - User list aur operations */}
+          {/* User list and operations */}
           <Link
             href="/users"
             onClick={closeSidebar}
@@ -126,7 +123,7 @@ export default function Sidebar({
             {!collapsed && <span>Users</span>}
           </Link>
           
-          {/* Image Templates Link - Image uploads aur management */}
+          {/* Image template uploads and management */}
           <Link
             href="/image-template"
             onClick={closeSidebar}
@@ -138,7 +135,7 @@ export default function Sidebar({
             {!collapsed && <span>Image Templates</span>}
           </Link>
 
-          {/* Video Templates Link - Video uploads aur management */}
+          {/* Video template uploads and management */}
           <Link
             href="/video-template"
             onClick={closeSidebar}
@@ -167,7 +164,7 @@ export default function Sidebar({
 
         {/* Logout Button - Bottom fixed section */}
         <div className="p-4 border-t border-gray-100">
-          {/* Logout button - click karte hain to confirmation dialog show hota hai */}
+          {/* Show the confirmation dialog before logging out */}
           <button
             onClick={() => setShowLogoutConfirm(true)}
             className={`
@@ -188,7 +185,7 @@ export default function Sidebar({
         <div
           className="fixed top-0 left-0 w-screen h-screen z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center"
           onClick={(e) => {
-            // Backdrop click karte hain to modal close hota hai
+            // Close the modal when the backdrop is clicked.
             if (e.target === e.currentTarget) setShowLogoutConfirm(false);
           }}
         >
@@ -240,16 +237,16 @@ export default function Sidebar({
               </div>
             </div> */}
 
-            {/* Modal Buttons - Cancel aur Logout */}
+            {/* Modal actions */}
             <div className="grid grid-cols-2 gap-2">
-              {/* Cancel button - Modal ko close karte hain, logout nahi hota */}
+              {/* Close the modal without logging out */}
               <button
                 onClick={() => setShowLogoutConfirm(false)}
                 className="py-2.5 rounded-xl border border-zinc-200 text-[13px] font-medium text-zinc-600 hover:bg-zinc-50 transition"
               >
                 Stay signed in
               </button>
-              {/* Logout button - handleLogout function call karte hain - token remove + login page redirect */}
+              {/* Clear the token and redirect to the login page */}
               <button
                 onClick={handleLogout}
                 className="py-2.5 rounded-xl bg-black hover:bg-black text-white text-[13px] font-semibold transition flex items-center justify-center gap-1.5"

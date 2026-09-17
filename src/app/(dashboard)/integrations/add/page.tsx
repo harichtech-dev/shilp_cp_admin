@@ -7,26 +7,25 @@ import { useRequireAdmin } from "@/hooks/useRequireAdmin";
 
 /**
  * Component: AddIntegrationPage
- * Ye component naya integration add karne ka form dikhata hai
- * User ko integration name enter karna padta hai aur fir submit karne se
- * API ko POST request jaati hai jo integration create ho jati hai
+ * Render the form used to create a new integration.
+ * The submitted integration name is sent to the API in a POST request.
  */
 export default function AddIntegrationPage() {
   const router = useRouter();
-  const canAccess = useRequireAdmin(); // Check karte hain ki admin hai ya nahi
-  const [name, setName] = useState(""); // Integration ka naam store karne ke liye
+  const canAccess = useRequireAdmin(); // Restrict this page to administrators.
+  const [name, setName] = useState(""); // Store the integration name.
 
 
-  // Naya integration create karne ka function - API ko data bhejta hai
+  // Create the integration through the API.
   const handleCreate = async () => {
     try {
-      // Backend ko integration ki details bhej rahe hain
+      // Send the integration details to the backend.
       await api.post("/integrations", {
-        name, // Integration ka naam
-        slug: name.toLowerCase(), // URL friendly naam
+        name, // Integration display name.
+        slug: name.toLowerCase(), // URL-friendly identifier.
         connectionType: "api_url_token", // Authentication type
 
-        // Integration ke liye required fields - ye fields user ko dikhenge
+        // Define the configuration fields shown to the user.
         fields: [
           {
             key: "apiUrl",
@@ -49,22 +48,22 @@ export default function AddIntegrationPage() {
         ],
       });
 
-      // Success ho to integrations list page par chale jao
+      // Return to the integrations list after creation.
       router.push("/integrations");
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Agar admin nahi hai to loading dikha
+  // Show a loading state while access is being checked.
   if (!canAccess) return <div className="p-6">Loading...</div>;
 
-  // Return - Form dikhana jo integration add karne ke liye
+  // Render the integration creation form.
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-xl font-bold">Add Integration</h1>
 
-      {/* Integration ka naam enter karne ke liye input field */}
+      {/* Integration name field */}
       <input
         placeholder="Integration Name (wati / interakt)"
         value={name}
@@ -72,7 +71,7 @@ export default function AddIntegrationPage() {
         className="border p-2 w-full rounded"
       />
 
-      {/* Submit button - Click karne se handleCreate function call hoga */}
+      {/* Submit the form */}
       <button
         onClick={handleCreate}
         className="bg-black text-white px-4 py-2 rounded"

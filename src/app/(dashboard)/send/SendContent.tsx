@@ -49,7 +49,7 @@ interface RawVideoTemplate {
 }
 
 export default function SendContent() {
-  // URL params se template IDs fetch karte hain (image ya video)
+  // Read image or video template IDs from the URL.
   const searchParams = useSearchParams();
   const templateId = searchParams.get("template") ?? ""; // Image template ID
   const videoTemplateId = searchParams.get("videoTemplate") ?? ""; // Video template ID
@@ -58,12 +58,12 @@ export default function SendContent() {
   const [users, setUsers] = useState<User[]>([]);
   const [template, setTemplate] = useState<Template | null>(null);
   const [videoTemplate, setVideoTemplate] = useState<VideoTemplate | null>(null);
-  const [sending, setSending] = useState(false); // Campaign send ho raha hai ya nahi
+  const [sending, setSending] = useState(false); // Whether the campaign is being sent.
   const [sentPct, setSentPct] = useState(0); // Progress percentage
   const [message, setMessage] = useState(""); // Success/error message
-  const [platform, setPlatform] = useState("wati"); // WATI ya INTERAKT
+  const [platform, setPlatform] = useState("wati"); // WATI or INTERAKT.
   const [integrations, setIntegrations] = useState<Integration[]>([]); // Connected integrations
-  const [showConfirm, setShowConfirm] = useState(false); // Confirmation modal dikhana hai ya nahi
+  const [showConfirm, setShowConfirm] = useState(false); // Whether to show the confirmation modal.
   const [previewUrl, setPreviewUrl] = useState(""); // Template preview image URL
   const [previewLoading, setPreviewLoading] = useState(false); // Preview loading state
 
@@ -78,9 +78,8 @@ export default function SendContent() {
   const router = useRouter();
 
   /**
-   * useEffect - Initial load par users, templates, integrations fetch karte hain
-   * Agar template selected hai to preview image bhi generate karte hain
-   * Ye sirf ek baar run hota hai (empty dependency array)
+   * Load users, templates, and integrations on the initial render.
+   * Generate a preview when a template is selected.
    */
   useEffect(() => {
     const init = async () => {
@@ -88,26 +87,26 @@ export default function SendContent() {
         // Parallel API calls - users, image templates, video templates, integrations
         const [userRes, imageRes, videoRes, integrationRes] = await Promise.all(
           [
-            getAllUsers(), // Sab active users fetch karte hain
+            getAllUsers(), // Fetch all active users.
             getTemplates(), // Image templates
             getVideoTemplates(), // Video templates
             getIntegrationStatus(), // Connected integrations (WATI, INTERAKT)
           ],
         );
 
-        // Users ko state mein set karte hain
+        // Store users in state.
         setUsers(userRes.data || []);
 
-        // Integrations list fetch karte hain - sirf connected ones
+        // Fetch integrations and keep only connected providers.
         const list: Integration[] = integrationRes.data || [];
         setIntegrations(list.filter((i) => i.status === "connected"));
 
-        // Video template ko load karte hain agar videoTemplate URL param mein hai
+        // Load the video template when its URL parameter is present.
         if (videoTemplateId) {
           const videoList = Array.isArray(videoRes)
             ? videoRes
             : videoRes?.data || [];
-          // Matching video template find karte hain ID se
+          // Find the matching video template by ID.
           const vid = videoList.find(
             (v: RawVideoTemplate) =>
               String(v._id || v.id) === String(videoTemplateId),
@@ -120,7 +119,7 @@ export default function SendContent() {
             });
           }
 
-          // Initial preview generate karte hain default colors ke saath
+          // Generate the initial preview with default colors.
           setPreviewLoading(true);
           const preview = await previewVideo({
             templateId: videoTemplateId,
@@ -131,7 +130,7 @@ export default function SendContent() {
           setPreviewLoading(false);
         }
 
-        // Image template ko load karte hain agar template URL param mein hai
+        // Load the image template when its URL parameter is present.
         if (templateId) {
           const tmpl = imageRes.data.find(
             (t: Template & { id?: string }) =>
@@ -139,7 +138,7 @@ export default function SendContent() {
           );
           setTemplate(tmpl);
 
-          // Image preview generate karte hain
+          // Generate the image preview.
           setPreviewLoading(true);
           const preview = await previewImage({
             templateId,
@@ -154,7 +153,7 @@ export default function SendContent() {
         setPreviewLoading(false);
       }
 
-      // Initial load complete - aage se color changes se preview update hona chahiye
+      // Initial loading is complete; future color changes update the preview.
       isInitialLoad.current = false;
     };
 
@@ -163,18 +162,17 @@ export default function SendContent() {
   }, []); // Component mount par ek baar hi run hota hai
 
   /**
-   * refreshPreview - Color change hone par preview image ko update karte hain
-   * Debounced - 600ms wait karte hain user input rokne ke baad
-   * Video aur image dono ke liye call karte hain
+   * refreshPreview - Update the preview after a color change.
+   * Debounce updates by 600ms for both video and image templates.
    */
   const refreshPreview = useCallback(
     async (bg: string, text: string) => {
-      // Agar koi template selected nahi hai to return
+      // Return when no template is selected.
       if (!videoTemplateId && !templateId) return;
       
       setPreviewLoading(true);
       try {
-        // Video template ke liye preview
+        // Generate a video template preview.
         if (videoTemplateId) {
           const preview = await previewVideo({
             templateId: videoTemplateId,
@@ -187,7 +185,7 @@ export default function SendContent() {
           }
         }
 
-        // Image template ke liye preview
+        // Generate an image template preview.
         if (templateId) {
           const preview = await previewImage({
             templateId,
@@ -209,50 +207,48 @@ export default function SendContent() {
   );
 
   /**
-   * useEffect - Color change hone par preview update karte hain (debounced)
-   * Initial load skip karte hain - pehle se initial preview generate ho chuka hai
-   * 600ms debounce - API ko spam nahi karte
+   * useEffect - Update the preview after debounced color changes.
+   * Skip the initial load because the initial preview already exists.
    */
   useEffect(() => {
-    // Initial load par skip - pehle se preview ho gaya
+    // Skip the initial load.
     if (isInitialLoad.current) return;
     
-    // Previous debounce timer ko clear karte hain (agar pending ho)
+    // Clear any pending debounce timer.
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     
-    // 600ms ke baad preview update karte hain (user input rokne ke baad)
+    // Update the preview after the user stops typing.
     debounceTimer.current = setTimeout(() => {
       void refreshPreview(bgColor, textColor);
     }, 600);
     
-    // Cleanup - component unmount par timer clear karte hain
+    // Clear the timer when the component unmounts.
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
   }, [bgColor, textColor, refreshPreview]);
 
   /**
-   * handleSend - Send button click par confirmation modal show karte hain
-   * Template selected hai ya nahi check karte hain
+   * handleSend - Show the confirmation modal when Send is clicked.
+   * Confirm that a template has been selected.
    */
   const handleSend = () => {
-    // Agar koi template selected nahi hai to error
+    // Show an error when no template is selected.
     if (!templateId && !videoTemplateId) {
       toast.error("No template selected");
       return;
     }
 
-    // Confirmation modal open karte hain
+    // Open the confirmation modal.
     setShowConfirm(true);
   };
 
   /**
-   * confirmSend - Confirmation mein "Send" button click par actual send hota hai
-   * Progress bar animated karte hain - user ko feel hota hai progress ho raha hai
-   * Video ya image - dono ke liye different API calls
+   * confirmSend - Send the campaign after confirmation.
+   * Animate progress and use the appropriate API for video or image templates.
    */
   const confirmSend = async () => {
-    // Modal close karte hain
+    // Close the modal.
     setShowConfirm(false);
     // Sending state on
     setSending(true);
@@ -270,7 +266,7 @@ export default function SendContent() {
     try {
       let res;
 
-      // Video template ko send karte hain
+      // Send the video template.
       if (videoTemplateId) {
         res = await sendBulkVideo({
           templateId: videoTemplateId,
@@ -279,7 +275,7 @@ export default function SendContent() {
           textColor,
         });
       } else {
-        // Image template ko send karte hain
+        // Send the image template.
         res = await sendBulkImage({
           templateId,
           platform,

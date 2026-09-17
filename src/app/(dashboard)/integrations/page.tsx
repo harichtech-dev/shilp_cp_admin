@@ -31,120 +31,112 @@ interface Integration {
 }
 
 export default function IntegrationsPage() {
-  // State management - integrations list, loading status, saving status
+  // Track integrations, loading state, and the integration being saved.
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
-  const [savingSlug, setSavingSlug] = useState<string | null>(null); // Kon sa integration save ho raha hai
+  const [savingSlug, setSavingSlug] = useState<string | null>(null); // Integration currently being saved.
   const router = useRouter();
-  const canAccess = useRequireAdmin(); // Admin access check - useRequireAdmin hook
+  const canAccess = useRequireAdmin(); // Restrict this page to administrators.
 
   /**
-   * loadIntegrations - Backend se integrations list fetch karte hain
-   * WATI, INTERAKT jaise sab integrations ke config aur status
+  * loadIntegrations - Fetch integration configuration and status.
    */
   const loadIntegrations = async () => {
-    // Backend API call - sab integrations fetch karte hain
+    // Fetch all integrations from the backend.
     const data = await getIntegrations();
-    // Response mein data array ko state mein set karte hain
+    // Store the returned data in state.
     setIntegrations(data.data || []);
   };
 
   /**
-   * useEffect - Component mount par integrations load karte hain
-   * Loading state manage karte hain, error handle karte hain
+  * Load integrations when the component mounts and manage loading state.
    */
   useEffect(() => {
     (async () => {
       try {
-        // Backend se integrations fetch karte hain
+        // Fetch integrations from the backend.
         const data = await getIntegrations();
-        // State update karte hain
+        // Update the integration state.
         setIntegrations(data.data || []);
       } catch (error) {
-        // Error ko console mein log karte hain
+        // Log the error for debugging.
         console.error(error);
       } finally {
-        // Loading complete - state update karte hain
+        // Mark loading as complete.
         setLoading(false);
       }
     })();
   }, []);
 
   /**
-   * handleChange - Integration config fields ko update karte hain
-   * User input karte hain to immediately state mein reflect hota hai
-   * slug: kaun sa integration (wati/interakt)
-   * key: field name (apiUrl, token, channelNumber)
-   * value: user ka entered value
+  * handleChange - Update an integration configuration field.
    */
   const handleChange = (slug: string, key: string, value: string) => {
-    // Integrations array ko map karte hain aur matching integration ko update karte hain
+    // Update the matching integration while preserving the others.
     setIntegrations((prev) =>
       prev.map((int) =>
-        int.slug === slug // Matching integration find karte hain
+        int.slug === slug // Match the selected integration.
           ? {
               ...int,
-              // Config object ko update karte hain - existing values + new value
+              // Preserve existing values and apply the new value.
               config: {
                 ...(int.config || {}),
                 [key]: value,
               },
             }
-          : int, // Non-matching integrations ko unchanged rakho
+          : int, // Leave non-matching integrations unchanged.
       ),
     );
   };
 
   /**
-   * saveConfig - Integration config ko backend mein save karte hain
-   * WATI API URL, JWT Token, Channel Number jaise credentials save hote hain
+  * saveConfig - Save integration credentials to the backend.
    */
   const saveConfig = async (slug: string, config: IntegrationConfig = {}) => {
     try {
-      // Saving state on - button disable hota hai loading ke liye
+      // Disable the save action while the request is in progress.
       setSavingSlug(slug);
 
-      // Backend API se config update karte hain
+      // Update the configuration through the backend API.
       const res = await updateIntegrationConfig(slug, config);
-      // Success message show karte hain
+      // Show a success notification.
       toast.success(res.message || "Connected successfully");
-      // Integrations list ko refresh karte hain (updated status ke saath)
+      // Refresh the list with the updated status.
       await loadIntegrations();
     } catch (err: unknown) {
-      // Error message ko extract karte hain response se
+      // Extract the error message from the response.
       const message =
         (err as { response?: { data?: { message?: string } } }).response?.data
           ?.message || "Error saving config";
 
-      // User ko error message dikhate hain
+      // Show the error notification.
       toast.error(message);
     } finally {
-      // Saving state off - button enable hota hai
+      // Re-enable the save action.
       setSavingSlug(null);
     }
   };
 
   /**
-   * toggleStatus - Integration ko connect/disconnect karte hain
-   * Connected status ko disconnected mein aur vice versa
+  * toggleStatus - Connect or disconnect an integration.
    */
   const toggleStatus = async (slug: string, status: string) => {
     try {
-      // Backend API se status toggle karte hain
+      // Toggle the status through the backend API.
       await updateIntegrationStatus(
         slug,
-        // Current status ke opposite mein change karte hain
+        // Switch to the opposite status.
         status === "connected" ? "disconnected" : "connected",
       );
-      // List ko refresh karte hain updated status ke saath
+      // Refresh the list with the updated status.
       await loadIntegrations();
     } catch (err) {
-      // Error ko log karte hain
+      // Log the error for debugging.
       console.error(err);
     }
   };
 
-  // Admin access check - non-admin ko loading dikhe
+  // Show a loading state while administrator access is checked.
   if (!canAccess) return <div className="p-6">Loading...</div>;
 
   // Initial loading state

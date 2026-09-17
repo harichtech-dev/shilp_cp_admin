@@ -18,57 +18,57 @@ const Login = () => {
 
   /**
    * handleLogin - Admin login process
-   * Email + password se authentication karte hain
-   * Token ko cookie aur localStorage mein save karte hain
-   * Successful login ke baad dashboard page par redirect
+  * Authenticate the administrator with their email and password.
+  * Store the token in a cookie and localStorage.
+  * Redirect to the dashboard after a successful login.
    */
   const handleLogin = async () => {
-    // Validation: Email aur password dono required hain
+    // Validate the required credentials.
     if (!email || !password) {
       toast.error("Please enter email and password");
       return;
     }
     
-    // Double check - email khali to nahi
+    // Validate the email field.
     if (!email) {
       toast.error("Please enter your email");
       return;
     }
     
-    // Double check - password khali to nahi
+    // Validate the password field.
     if (!password) {
       toast.error("Please enter your password");
       return;
     }
 
     try {
-      // Loading state on - button disable hota hai
+      // Disable the submit button while the request is in progress.
       setLoading(true);
 
-      // Backend API call - login endpoint ko email/password bhejte hain
+      // Send the credentials to the login endpoint.
       const res = await login({ email, password });
 
-      // Global store mein user data save karte hain (Zustand)
+      // Store the authenticated user in the global Zustand store.
       setUser(res.admin);
 
-      // Token cookie mein store karte hain - middleware ke liye
+      // Store the token in a cookie for middleware authentication.
       document.cookie = `token=${res.token}; path=/`;
 
-      // Token localStorage mein bhi save karte hain - browser close hone par bhi persist rahe
+      // Persist the token in localStorage as well.
       localStorage.setItem("token", res.token);
 
-      // Success message show karte hain
+      // Show a success notification.
       toast.success("Login Successfully");
 
-      // Dashboard page par redirect karte hain
+      // Redirect to the dashboard.
       router.push("/dashboard");
     } catch (error) {
-      // Error ko console mein log karte hain debugging ke liye
+      // Log the error for debugging.
       console.log(error);
-      // User ko error message dikhate hain
+      // Show an error notification to the user.
       toast.error("Invalid credentials");
     } finally {
-      // Loading state off - button enable hota hai
+      // Re-enable the submit button.
       setLoading(false);
     }
   };
@@ -149,20 +149,20 @@ const Login = () => {
             />
           </div>
 
-          {/* Password Input - Password ko toggle kar sakte hain show/hide */}
+          {/* Password input with show/hide toggle */}
           <div className="mb-2">
             <label className="block text-xs font-medium text-gray-400 mb-1.5 tracking-wide">
               Password
             </label>
             <div className="relative">
-              {/* Password field - type toggle karte hain show/hide ke liye */}
+              {/* Toggle the password field between text and password types */}
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 className="w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-900 focus:bg-white transition-colors"
                 onChange={(e) => setPassword(e.target.value)}
               />
-              {/* Toggle button - password show/hide ke liye Eye icon */}
+              {/* Toggle password visibility */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}

@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 /**
- * MIDDLEWARE FUNCTION - Request check karne ke liye
+ * MIDDLEWARE FUNCTION - Protect authenticated routes.
  */
 export function middleware(req: NextRequest) {
-  const token = req.cookies.get("token"); // Cookie se token nikala
+  const token = req.cookies.get("token"); // Read the token from the cookie.
 
-  // Protected routes jo login ke baad accessible hain
+  // Routes that require authentication.
   const protectedRoutes = [
     "/dashboard",
     "/users",
@@ -17,23 +17,23 @@ export function middleware(req: NextRequest) {
     "/video-template",
   ];
 
-  // Check karte hain ki current route protected hai ya nahi
+  // Check whether the current route is protected.
   const isProtectedRoute = protectedRoutes.some((route) =>
     req.nextUrl.pathname.startsWith(route)
   );
 
-  // Agar protected route hai aur token nahi hai to login par redirect
+  // Redirect unauthenticated requests to login.
   if (isProtectedRoute && !token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Sab theek hai to next request allow kar do
+  // Allow authenticated requests to continue.
   return NextResponse.next();
 }
 
 /**
- * CONFIG - Ye define karta hai ki middleware kaun kaun routes par run ho
- * Matcher mein diye routes par hi ye middleware check karega
+ * CONFIG - Define which routes are handled by the middleware.
+ * The middleware runs only for routes listed in the matcher.
  */
 export const config = {
   matcher: [

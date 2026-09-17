@@ -6,18 +6,18 @@ import { useAuthStore } from "@/store/auth.store";
 
 export const useRequireAdmin = () => {
   const router = useRouter();
-  const user = useAuthStore((s) => s.user); // Auth store se user data
+  const user = useAuthStore((s) => s.user); // Read the authenticated user.
 
-  // Check karte hain ki user admin hai ya nahi
+  // Verify that the user has administrator access.
   const canAccess = user?.role === "admin";
 
   useEffect(() => {
-    // Agar user logout hua ya admin nahi hai to dashboard par redirect kar do
+    // Redirect unauthorized users to the dashboard.
     if (user !== null && user?.role !== "admin") {
       router.replace("/dashboard");
     }
   }, [user, router]);
 
-  // True/False return karte hain - admin hai ya nahi
+  // Return whether the current user is an administrator.
   return canAccess;
 };

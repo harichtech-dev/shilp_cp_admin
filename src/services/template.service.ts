@@ -1,7 +1,7 @@
 import { api } from "./api";
 
 /**
- * GET TEMPLATES - Sab templates ki list lena
+ * GET TEMPLATES - List all templates.
  * Output: Available image/video templates
  */
 export const getTemplates = async () => {
@@ -10,10 +10,10 @@ export const getTemplates = async () => {
 };
 
 /**
- * UPLOAD TEMPLATE - Naya template upload karna
+ * UPLOAD TEMPLATE - Upload a new template.
  * Input: file (image/video), providers array
- * Providers mein kaunsi platforms par ye template use hona hai
- * Process: FormData mein file aur metadata bhejte hain
+ * Specify which provider platforms should use the template.
+ * Process: Send the file and metadata as FormData.
  */
 export const uploadTemplate = async (file: File, providers: { platform: string; templateName: string; mediaType: string }[]) => {
   const formData = new FormData();
@@ -30,15 +30,14 @@ export const uploadTemplate = async (file: File, providers: { platform: string; 
 };
 
 /**
- * DELETE TEMPLATE - Existing template delete karna
+ * DELETE TEMPLATE - Delete an existing template.
  */
 export const deleteTemplate = async (id: string) => {
   return api.delete(`/whatsapp/templates/${id}`);
 };
 
 /**
- * PREVIEW IMAGE - Template ka preview dekh sakte hain
- * Customization ke saath (colors etc.)
+ * PREVIEW IMAGE - Generate a template preview with customization options.
  */
 export const previewImage = async ({
   templateId,

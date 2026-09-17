@@ -25,7 +25,7 @@ export default function VideoTemplatePage() {
   const [uploading, setUploading] = useState(false);
   
   // Modal and form states
-  const [showModal, setShowModal] = useState(false); // WATI name enter karne ka modal
+  const [showModal, setShowModal] = useState(false); // Modal for entering the WATI name.
   const [watiTemplateName, setWatiTemplateName] = useState("property_video_share_one"); // WATI template name
   
   // File and video configuration
@@ -35,7 +35,7 @@ export default function VideoTemplatePage() {
   const fileRef = useRef<HTMLInputElement>(null); // File input reference
 
   /**
-   * fetchTemplates - Backend se video templates fetch karte hain
+   * fetchTemplates - Fetch video templates from the backend.
    */
   const fetchTemplates = async () => {
     try {
@@ -53,12 +53,12 @@ export default function VideoTemplatePage() {
   };
 
   /**
-   * useEffect - Component mount par templates load karte hain
+   * useEffect - Load templates when the component mounts.
    */
   useEffect(() => {
     const loadTemplates = async () => {
       try {
-        // Backend se video templates fetch karte hain
+        // Fetch video templates from the backend.
         const data = await getVideoTemplates();
 
         if (data.success) {
@@ -76,23 +76,23 @@ export default function VideoTemplatePage() {
   }, []);
 
   /**
-   * handleFileSelect - Step 1: Video file select hone par modal show karte hain
-   * Modal mein WATI template name + layout selection hota hai
+   * handleFileSelect - Step 1: Open the modal after a video file is selected.
+   * The modal collects the WATI template name and layout.
    */
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // File input se pehla file select karte hain
+    // Select the first file from the input.
     const selected = e.target.files?.[0];
     if (!selected) return;
     
-    // File ko state mein store karte hain
+    // Store the file in state.
     setFile(selected);
-    // Modal show karte hain - admin WATI name enter kar sakta hai
+    // Open the modal for the WATI template name.
     setShowModal(true);
   };
 
   /**
-   * handleConfirmUpload - Step 2: Modal confirmation mein video upload start hota hai
-   * Video ko WATI provider ke saath + layout info
+   * handleConfirmUpload - Step 2: Start the video upload after confirmation.
+   * Include the WATI provider and layout information.
    */
   const handleConfirmUpload = async () => {
     // Validation
@@ -100,14 +100,14 @@ export default function VideoTemplatePage() {
     
     // Modal close
     setShowModal(false);
-    // Loading toast show karte hain
+    // Show a loading notification.
     const toastId = toast.loading("Uploading video...");
 
     try {
       // Upload state on
       setUploading(true);
       
-      // Provider configuration - WATI ke saath
+      // Build the WATI provider configuration.
       const providers = [
         {
           platform: "wati",
@@ -116,13 +116,13 @@ export default function VideoTemplatePage() {
         },
       ];
 
-      // Backend API - file, layout, providers ke saath upload
+      // Upload the file, layout, and providers through the backend API.
       const res = await uploadVideoTemplate(file, layout, providers);
 
       if (res.success) {
         // Success message
         toast.success("Video uploaded successfully", { id: toastId });
-        // Templates list refresh karte hain
+        // Refresh the template list.
         fetchTemplates();
       } else {
         toast.error(res.message || "Upload failed", { id: toastId });
@@ -142,7 +142,7 @@ export default function VideoTemplatePage() {
   };
 
   /**
-   * handleDelete - Video template ko delete karte hain with confirmation
+   * handleDelete - Delete a video template after confirmation.
    */
   const handleDelete = (id: string) => {
     // Confirmation toast

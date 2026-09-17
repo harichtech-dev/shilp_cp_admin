@@ -3,24 +3,23 @@ import type { User } from "@/types/user";
 
 interface AuthState {
   user: User | null; // User data ya null
-  setUser: (user: User | null) => void; // User set karne ka function
+  setUser: (user: User | null) => void; // Store the authenticated user.
   logout: () => void; // Logout function
 }
 
 /**
- * AUTH STORE - Zustand store create kar rahe hain
- * Ye store puri application mein accessible hota hai
+ * AUTH STORE - Zustand store shared across the application.
  */
 export const useAuthStore = create<AuthState>((set) => ({
-  // Initial state - user null hai
+  // Initial state has no authenticated user.
   user: null,
   
-  // User data set karne ka function
+  // Set the authenticated user.
   setUser: (user) => set({ user }),
 
-  // Logout function - Token remove kar ke user ko null set kar deta hai
+  // Clear the token and authenticated user.
   logout: () => {
-    localStorage.removeItem("token"); // Token remove kar rahe hain
-    set({ user: null }); // User ko null set kar rahe hain
+    localStorage.removeItem("token"); // Remove the token.
+    set({ user: null }); // Clear the user.
   },
 }));

@@ -11,15 +11,15 @@ type Props = {
 export default function Navbar({
   onMenuClick,
 }: Props) {
-  // Global store se user data fetch karte hain (admin name, etc)
+  // Read administrator data from the global store.
   const user = useAuthStore((s) => s.user);
 
   return (
     // Navbar container - fixed height, white background, border
     <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-      {/* Left Section - Mobile menu button aur page title */}
+      {/* Left section with the mobile menu button and page title */}
       <div className="flex items-center gap-3">
-        {/* Mobile Menu Button - Mobile devices par click karte hain to sidebar open hota hai */}
+          {/* Open the sidebar on mobile devices */}
         <button onClick={onMenuClick} className="lg:hidden">
           <svg
             width="22"
@@ -46,7 +46,7 @@ export default function Navbar({
       <div className="flex items-center gap-3">
         {/* Admin role label */}
         <span className="text-sm text-gray-500">Admin</span>
-        {/* Avatar circle - Sirf 'A' letter show karte hain */}
+          {/* Administrator avatar */}
         <div className="w-8 h-8 bg-black text-white text-sm flex items-center justify-center rounded-full font-medium">
           A
         </div>

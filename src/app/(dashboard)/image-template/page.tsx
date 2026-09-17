@@ -29,8 +29,7 @@ const Page = () => {
   const [templateName, setTemplateName] = useState("property_details_share_"); // WATI template name
 
   /**
-   * fetchTemplates - Backend se sab image templates fetch karte hain
-   * Templates ko state mein set karte hain, loading state manage karte hain
+   * fetchTemplates - Fetch image templates and update loading state.
    */
   const fetchTemplates = async () => {
     try {
@@ -48,27 +47,26 @@ const Page = () => {
   };
 
   /**
-   * handleFileSelect - File input se file select hone par modal show karte hain
-   * Modal mein admin WATI template name enter kar sakte hain
+   * handleFileSelect - Open the modal after a file is selected.
+   * The administrator can enter the WATI template name in the modal.
    */
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // File ke array mein se pehla file select karte hain
+    // Select the first file from the input.
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // File ko temporary state mein store karte hain
+    // Store the file in temporary state.
     setPendingFile(file);
-    // Modal show karte hain - admin template name enter kar sakta hai
+    // Open the modal for the template name.
     setShowModal(true);
   };
 
   /**
-   * handleConfirmUpload - Modal confirmation mein upload start hota hai
-   * File ko WATI provider ke saath upload karte hain
-   * Upload success par templates list refresh karte hain
+   * handleConfirmUpload - Start the upload after modal confirmation.
+   * Upload the file with the WATI provider and refresh the list on success.
    */
   const handleConfirmUpload = async () => {
-    // Validation - file aur template name required
+    // Validate the file and template name.
     if (!pendingFile || !templateName) return;
 
     try {
@@ -77,7 +75,7 @@ const Page = () => {
       // Modal close
       setShowModal(false);
 
-      // Provider object - WATI template name ke saath
+      // Build the provider configuration with the WATI template name.
       const providers = [
         { 
           platform: "wati", 
@@ -86,13 +84,13 @@ const Page = () => {
         },
       ];
 
-      // Backend API se upload karte hain
+      // Upload through the backend API.
       const res = await uploadTemplate(pendingFile, providers);
 
       if (res.success) {
         // Success message
         toast.success("Template uploaded successfully");
-        // Templates list refresh karte hain
+        // Refresh the template list.
         fetchTemplates();
       } else {
         toast.error(res.message || "Upload failed");
@@ -102,21 +100,21 @@ const Page = () => {
     } finally {
       // Upload state off
       setUploading(false);
-      // Form reset karte hain
+      // Reset the form.
       setTemplateName("");
       setPendingFile(null);
-      // File input clear karte hain
+      // Clear the file input.
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   /**
-   * useEffect - Component mount par templates load karte hain
+   * useEffect - Load templates when the component mounts.
    */
   useEffect(() => {
     const loadTemplates = async () => {
       try {
-        // Backend se templates fetch karte hain
+        // Fetch templates from the backend.
         const data = await getTemplates();
 
         if (data.success) {
@@ -134,11 +132,11 @@ const Page = () => {
   }, []);
 
   /**
-   * handleDelete - Template ko delete karte hain with confirmation
-   * id: template ID jo delete karna hai
+   * handleDelete - Delete a template after confirmation.
+   * id: ID of the template to delete.
    */
   const handleDelete = (id: string) => {
-    // Confirmation toast show karte hain
+    // Show a confirmation notification.
     const toastId = toast("Are you sure you want to delete?", {
       action: {
         label: "Delete",
@@ -146,11 +144,11 @@ const Page = () => {
           try {
             // Confirmation dialog close
             toast.dismiss(toastId);
-            // Backend API se delete karte hain
+            // Delete through the backend API.
             await deleteTemplate(id);
             // Success message
             toast.success("Template deleted");
-            // Templates list refresh karte hain
+            // Refresh the template list.
             fetchTemplates();
           } catch {
             toast.error("Delete failed");

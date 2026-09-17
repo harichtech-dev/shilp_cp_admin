@@ -1,16 +1,16 @@
 import { api } from "./api";
 
 /**
- * GET USERS PARAMS - User list fetch ke liye parameters
+ * GET USERS PARAMS - Parameters for fetching the user list.
  */
 type GetUsersParams = {
   page?: number;           // Page number for pagination
   limit?: number;          // Limit per page
-  search?: string;         // Search query (name, email, phone se)
+  search?: string;         // Search query (name, email, or phone).
 };
 
 /**
- * UPDATE USER PAYLOAD - User data update karte waqt ye structure
+ * UPDATE USER PAYLOAD - Payload structure for updating user data.
  */
 export type UpdateUserPayload = {
   name: string;
@@ -37,7 +37,7 @@ export const getUsers = async ({
 };
 
 /**
- * GET ALL USERS - Sab active users without pagination
+ * GET ALL USERS - Fetch all active users without pagination.
  */
 export const getAllUsers = async () => {
   const res = await api.get("/users/all");
@@ -46,15 +46,15 @@ export const getAllUsers = async () => {
 };
 
 /**
- * DELETE USER - Kisi user ko delete karna
+ * DELETE USER - Delete a user.
  */
 export const deleteUser = async (_id: string) => {
   return api.delete(`/users/${_id}`);
 };
 
 /**
- * CREATE USER - Naya user add karna
- * Form data mein file bhi ho sakti hai (logo image)
+ * CREATE USER - Add a new user.
+ * Form data may also include a logo image.
  */
 export const createUser = async (data: {
   name: string;
@@ -63,7 +63,7 @@ export const createUser = async (data: {
   company?: string;
   logo?: File | null;
 }) => {
-  // FormData use kar rahe hain taaki file bhi upload ho sake
+  // Use FormData so a file can be uploaded as well.
   const formData = new FormData();
 
   formData.append("name", data.name);
@@ -80,7 +80,7 @@ export const createUser = async (data: {
   return res.data;
 };
 
-// ✅ GET single user (you Don&apos;t have this yet → reuse list)
+// GET a single user.
 export const getUserById = async (_id: string) => {
   const res = await api.get(`/users/${_id}`);
   // console.log("getUserById response:", res.data);
