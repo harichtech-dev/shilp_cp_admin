@@ -8,7 +8,7 @@ import {
   sendBulkVideo,
   previewVideo,
 } from "@/services/video.service";
-import { sendBulkImage } from "@/services/whatsapp.service";
+import { sendBulkImage, getBulkJobStatus } from "@/services/whatsapp.service";
 import Link from "next/link";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { getIntegrationStatus } from "@/services/integration.service";
@@ -49,65 +49,65 @@ interface RawVideoTemplate {
 }
 
 export default function SendContent() {
-  // URL params se template IDs fetch karte hain (image ya video)
   const searchParams = useSearchParams();
-  const templateId = searchParams.get("template") ?? ""; // Image template ID
-  const videoTemplateId = searchParams.get("videoTemplate") ?? ""; // Video template ID
+  const templateId = searchParams.get("template") ?? "";
+  const videoTemplateId = searchParams.get("videoTemplate") ?? "";
 
-  // State management - users, templates, colors, sending status
   const [users, setUsers] = useState<User[]>([]);
   const [template, setTemplate] = useState<Template | null>(null);
-  const [videoTemplate, setVideoTemplate] = useState<VideoTemplate | null>(null);
-  const [sending, setSending] = useState(false); // Campaign send ho raha hai ya nahi
-  const [sentPct, setSentPct] = useState(0); // Progress percentage
-  const [message, setMessage] = useState(""); // Success/error message
-  const [platform, setPlatform] = useState("wati"); // WATI ya INTERAKT
-  const [integrations, setIntegrations] = useState<Integration[]>([]); // Connected integrations
-  const [showConfirm, setShowConfirm] = useState(false); // Confirmation modal dikhana hai ya nahi
-  const [previewUrl, setPreviewUrl] = useState(""); // Template preview image URL
-  const [previewLoading, setPreviewLoading] = useState(false); // Preview loading state
+  const [videoTemplate, setVideoTemplate] = useState<VideoTemplate | null>(
+    null,
+  );
+  const [sending, setSending] = useState(false);
+  const [sentPct, setSentPct] = useState(0);
+  const [progress, setProgress] = useState({
+    total: 0,
+    sent: 0,
+    delivered: 0,
+    failed: 0,
+  });
+  const [restrictedCount, setRestrictedCount] = useState(0);
+  const [message, setMessage] = useState("");
+  const [platform, setPlatform] = useState("wati");
+  const [integrations, setIntegrations] = useState<Integration[]>([]);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewLoading, setPreviewLoading] = useState(false);
 
-  // Template customization colors
-  const [bgColor, setBgColor] = useState("#E5C840"); // Background color
-  const [textColor, setTextColor] = useState("#1A1000"); // Text color
+  // Add state
+  const [bgColor, setBgColor] = useState("#E5C840");
+  const [textColor, setTextColor] = useState("#1A1000");
 
-  // Refs - initial load flag, debounce timer
+  // Track if this is the initial load so we don't double-fetch preview
   const isInitialLoad = useRef(true);
+  // Debounce timer ref
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const router = useRouter();
 
-  /**
-   * useEffect - Initial load par users, templates, integrations fetch karte hain
-   * Agar template selected hai to preview image bhi generate karte hain
-   * Ye sirf ek baar run hota hai (empty dependency array)
-   */
+  // ─── ONE-TIME: fetch users, templates, integrations, and initial preview ───
   useEffect(() => {
     const init = async () => {
       try {
-        // Parallel API calls - users, image templates, video templates, integrations
         const [userRes, imageRes, videoRes, integrationRes] = await Promise.all(
           [
-            getAllUsers(), // Sab active users fetch karte hain
-            getTemplates(), // Image templates
-            getVideoTemplates(), // Video templates
-            getIntegrationStatus(), // Connected integrations (WATI, INTERAKT)
+            getAllUsers(),
+            getTemplates(),
+            getVideoTemplates(),
+            getIntegrationStatus(),
           ],
         );
 
-        // Users ko state mein set karte hain
         setUsers(userRes.data || []);
 
-        // Integrations list fetch karte hain - sirf connected ones
         const list: Integration[] = integrationRes.data || [];
         setIntegrations(list.filter((i) => i.status === "connected"));
 
-        // Video template ko load karte hain agar videoTemplate URL param mein hai
+        // 🎥 VIDEO template
         if (videoTemplateId) {
           const videoList = Array.isArray(videoRes)
             ? videoRes
             : videoRes?.data || [];
-          // Matching video template find karte hain ID se
           const vid = videoList.find(
             (v: RawVideoTemplate) =>
               String(v._id || v.id) === String(videoTemplateId),
@@ -120,7 +120,7 @@ export default function SendContent() {
             });
           }
 
-          // Initial preview generate karte hain default colors ke saath
+          // Initial preview with default colors
           setPreviewLoading(true);
           const preview = await previewVideo({
             templateId: videoTemplateId,
@@ -131,7 +131,7 @@ export default function SendContent() {
           setPreviewLoading(false);
         }
 
-        // Image template ko load karte hain agar template URL param mein hai
+        // 🖼 IMAGE template
         if (templateId) {
           const tmpl = imageRes.data.find(
             (t: Template & { id?: string }) =>
@@ -139,7 +139,6 @@ export default function SendContent() {
           );
           setTemplate(tmpl);
 
-          // Image preview generate karte hain
           setPreviewLoading(true);
           const preview = await previewImage({
             templateId,
@@ -154,31 +153,24 @@ export default function SendContent() {
         setPreviewLoading(false);
       }
 
-      // Initial load complete - aage se color changes se preview update hona chahiye
       isInitialLoad.current = false;
     };
 
     void init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Component mount par ek baar hi run hota hai
+  }, []); // ← runs ONCE on mount only
 
-  /**
-   * refreshPreview - Color change hone par preview image ko update karte hain
-   * Debounced - 600ms wait karte hain user input rokne ke baad
-   * Video aur image dono ke liye call karte hain
-   */
+  // ─── DEBOUNCED: re-fetch preview whenever colors change (video only) ───────
   const refreshPreview = useCallback(
     async (bg: string, text: string) => {
-      // Agar koi template selected nahi hai to return
-      if (!videoTemplateId && !templateId) return;
-      
+      if (!videoTemplateId && !templateId) return; 
       setPreviewLoading(true);
       try {
-        // Video template ke liye preview
+        // VIDEO
         if (videoTemplateId) {
           const preview = await previewVideo({
             templateId: videoTemplateId,
-            bgColor: bg, // Updated color
+            bgColor: bg,
             textColor: text,
           });
 
@@ -187,7 +179,7 @@ export default function SendContent() {
           }
         }
 
-        // Image template ke liye preview
+        // IMAGE
         if (templateId) {
           const preview = await previewImage({
             templateId,
@@ -208,78 +200,84 @@ export default function SendContent() {
     [videoTemplateId, templateId],
   );
 
-  /**
-   * useEffect - Color change hone par preview update karte hain (debounced)
-   * Initial load skip karte hain - pehle se initial preview generate ho chuka hai
-   * 600ms debounce - API ko spam nahi karte
-   */
+  // Watch bgColor
   useEffect(() => {
-    // Initial load par skip - pehle se preview ho gaya
-    if (isInitialLoad.current) return;
-    
-    // Previous debounce timer ko clear karte hain (agar pending ho)
+    if (isInitialLoad.current) return; // skip — initial preview already fired
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    
-    // 600ms ke baad preview update karte hain (user input rokne ke baad)
     debounceTimer.current = setTimeout(() => {
       void refreshPreview(bgColor, textColor);
-    }, 600);
-    
-    // Cleanup - component unmount par timer clear karte hain
+    }, 600); // 600 ms debounce — feels instant, avoids hammering API
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
   }, [bgColor, textColor, refreshPreview]);
 
-  /**
-   * handleSend - Send button click par confirmation modal show karte hain
-   * Template selected hai ya nahi check karte hain
-   */
   const handleSend = () => {
-    // Agar koi template selected nahi hai to error
     if (!templateId && !videoTemplateId) {
       toast.error("No template selected");
       return;
     }
 
-    // Confirmation modal open karte hain
-    setShowConfirm(true);
+    setShowConfirm(true); // open modal
   };
 
-  /**
-   * confirmSend - Confirmation mein "Send" button click par actual send hota hai
-   * Progress bar animated karte hain - user ko feel hota hai progress ho raha hai
-   * Video ya image - dono ke liye different API calls
-   */
+  // Polls a background bulk job every 2s and updates real progress
+  const pollBulkJob = async (jobId: string) => {
+    while (true) {
+      const res = await getBulkJobStatus(jobId);
+      const job = res?.data;
+      if (!job) throw new Error("Bulk job not found");
+
+      const total =
+        job.total || users.length || 0;
+      const sent = job.done || 0;
+      const delivered = job.delivered || 0;
+      const failed = job.failed || 0;
+      const pending = Math.max(0, sent - delivered - failed);
+
+      setProgress({ total, sent, delivered, failed });
+      setSentPct(total ? Math.min(100, Math.round(((sent + failed) / total) * 100)) : 0);
+
+      if (job.status === "done") {
+        const failedMsg = failed ? ` · ${failed} failed` : "";
+        const pendingMsg = pending > 0 ? ` · ${pending} pending` : "";
+        const restricted = (job.failedList || []).filter((f: { error?: string }) =>
+          /meta has restricted|higher quality messaging/i.test(f.error || ""),
+        ).length;
+        setRestrictedCount(restricted);
+        setMessage(
+          `Delivered to ${delivered} of ${total} recipients${failedMsg}${pendingMsg}.`,
+        );
+        return;
+      }
+
+      if (job.status === "failed") {
+        throw new Error(job.error || "Bulk send failed");
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  };
+
   const confirmSend = async () => {
-    // Modal close karte hain
     setShowConfirm(false);
-    // Sending state on
     setSending(true);
     setSentPct(0);
+    setProgress({ total: users.length, sent: 0, delivered: 0, failed: 0 });
+    setRestrictedCount(0);
     setMessage("");
-
-    // Progress bar animation - 600ms every 700ms
-    let p = 0;
-    const iv = setInterval(() => {
-      p = Math.min(p + 34, 100); // Max 100%
-      setSentPct(p);
-      if (p >= 100) clearInterval(iv); // Stop animation at 100%
-    }, 700);
 
     try {
       let res;
 
-      // Video template ko send karte hain
       if (videoTemplateId) {
         res = await sendBulkVideo({
           templateId: videoTemplateId,
-          platform, // WATI ya INTERAKT
-          bgColor, // Customization colors
-          textColor,
+          platform,
+          bgColor, // ← add
+          textColor, // ← add
         });
       } else {
-        // Image template ko send karte hain
         res = await sendBulkImage({
           templateId,
           platform,
@@ -288,10 +286,13 @@ export default function SendContent() {
         });
       }
 
-      if (res.success) {
+      if (res?.jobId) {
+        await pollBulkJob(res.jobId);
+      } else if (res?.success) {
+        // Legacy synchronous response (e.g. video path)
         setMessage(`Delivered successfully to all ${users.length} recipients.`);
       } else {
-        setMessage("Failed: " + (res.message || "Something went wrong"));
+        setMessage("Failed: " + (res?.message || "Something went wrong"));
       }
     } catch (err: unknown) {
       const msg =
@@ -817,6 +818,24 @@ export default function SendContent() {
             {message}
           </p>
         )}
+
+        {isSent && restrictedCount > 0 && (
+          <div className="mx-7 mb-5 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-xs text-amber-800 leading-relaxed">
+            <p className="font-semibold mb-0.5">
+              {restrictedCount === progress.failed
+                ? `All ${restrictedCount}`
+                : `${restrictedCount} of ${progress.failed}`}{" "}
+              failed message{restrictedCount === 1 ? " was" : "s were"} blocked by
+              Meta&apos;s marketing limit (max 2 marketing messages per user per
+              24 hours unless they reply).
+            </p>
+            <p>
+              Retry in a few days or send only to contacts who have recently
+              engaged with you. This is a Meta restriction, not a problem with
+              your template or setup.
+            </p>
+          </div>
+        )}
       </div>
 
       {showConfirm && (
@@ -900,8 +919,17 @@ export default function SendContent() {
           <p className="text-white text-sm font-semibold tracking-wide">
             Sending campaign… {sentPct}%
           </p>
+          <p className="text-white/80 text-xs font-medium">
+            {progress.sent} of {progress.total || users.length} sent
+            {progress.delivered > 0 ? ` · ${progress.delivered} delivered` : ""}
+            {progress.failed > 0 ? (
+              <span className="text-red-300"> · {progress.failed} failed</span>
+            ) : (
+              ""
+            )}
+          </p>
           <p className="text-white/60 text-xs">
-            Please don&apos;t navigate away until this completes.
+            Sending continues in the background — you can close this page.
           </p>
         </div>
       )}
