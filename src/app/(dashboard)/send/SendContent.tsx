@@ -8,7 +8,7 @@ import {
   sendBulkVideo,
   previewVideo,
 } from "@/services/video.service";
-import { sendBulkImage } from "@/services/whatsapp.service";
+import { sendBulkImage, getBulkJobStatus } from "@/services/whatsapp.service";
 import Link from "next/link";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { getIntegrationStatus } from "@/services/integration.service";
@@ -60,6 +60,13 @@ export default function SendContent() {
   );
   const [sending, setSending] = useState(false);
   const [sentPct, setSentPct] = useState(0);
+  const [progress, setProgress] = useState({
+    total: 0,
+    sent: 0,
+    delivered: 0,
+    failed: 0,
+  });
+  const [restrictedCount, setRestrictedCount] = useState(0);
   const [message, setMessage] = useState("");
   const [platform, setPlatform] = useState("wati");
   const [integrations, setIntegrations] = useState<Integration[]>([]);
@@ -214,18 +221,51 @@ export default function SendContent() {
     setShowConfirm(true); // open modal
   };
 
+  // Polls a background bulk job every 2s and updates real progress
+  const pollBulkJob = async (jobId: string) => {
+    while (true) {
+      const res = await getBulkJobStatus(jobId);
+      const job = res?.data;
+      if (!job) throw new Error("Bulk job not found");
+
+      const total =
+        job.total || users.length || 0;
+      const sent = job.done || 0;
+      const delivered = job.delivered || 0;
+      const failed = job.failed || 0;
+      const pending = Math.max(0, sent - delivered - failed);
+
+      setProgress({ total, sent, delivered, failed });
+      setSentPct(total ? Math.min(100, Math.round(((sent + failed) / total) * 100)) : 0);
+
+      if (job.status === "done") {
+        const failedMsg = failed ? ` · ${failed} failed` : "";
+        const pendingMsg = pending > 0 ? ` · ${pending} pending` : "";
+        const restricted = (job.failedList || []).filter((f: { error?: string }) =>
+          /meta has restricted|higher quality messaging/i.test(f.error || ""),
+        ).length;
+        setRestrictedCount(restricted);
+        setMessage(
+          `Delivered to ${delivered} of ${total} recipients${failedMsg}${pendingMsg}.`,
+        );
+        return;
+      }
+
+      if (job.status === "failed") {
+        throw new Error(job.error || "Bulk send failed");
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  };
+
   const confirmSend = async () => {
     setShowConfirm(false);
     setSending(true);
     setSentPct(0);
+    setProgress({ total: users.length, sent: 0, delivered: 0, failed: 0 });
+    setRestrictedCount(0);
     setMessage("");
-
-    let p = 0;
-    const iv = setInterval(() => {
-      p = Math.min(p + 34, 100);
-      setSentPct(p);
-      if (p >= 100) clearInterval(iv);
-    }, 700);
 
     try {
       let res;
@@ -246,10 +286,13 @@ export default function SendContent() {
         });
       }
 
-      if (res.success) {
+      if (res?.jobId) {
+        await pollBulkJob(res.jobId);
+      } else if (res?.success) {
+        // Legacy synchronous response (e.g. video path)
         setMessage(`Delivered successfully to all ${users.length} recipients.`);
       } else {
-        setMessage("Failed: " + (res.message || "Something went wrong"));
+        setMessage("Failed: " + (res?.message || "Something went wrong"));
       }
     } catch (err: unknown) {
       const msg =
@@ -775,6 +818,24 @@ export default function SendContent() {
             {message}
           </p>
         )}
+
+        {isSent && restrictedCount > 0 && (
+          <div className="mx-7 mb-5 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-xs text-amber-800 leading-relaxed">
+            <p className="font-semibold mb-0.5">
+              {restrictedCount === progress.failed
+                ? `All ${restrictedCount}`
+                : `${restrictedCount} of ${progress.failed}`}{" "}
+              failed message{restrictedCount === 1 ? " was" : "s were"} blocked by
+              Meta&apos;s marketing limit (max 2 marketing messages per user per
+              24 hours unless they reply).
+            </p>
+            <p>
+              Retry in a few days or send only to contacts who have recently
+              engaged with you. This is a Meta restriction, not a problem with
+              your template or setup.
+            </p>
+          </div>
+        )}
       </div>
 
       {showConfirm && (
@@ -858,8 +919,17 @@ export default function SendContent() {
           <p className="text-white text-sm font-semibold tracking-wide">
             Sending campaign… {sentPct}%
           </p>
+          <p className="text-white/80 text-xs font-medium">
+            {progress.sent} of {progress.total || users.length} sent
+            {progress.delivered > 0 ? ` · ${progress.delivered} delivered` : ""}
+            {progress.failed > 0 ? (
+              <span className="text-red-300"> · {progress.failed} failed</span>
+            ) : (
+              ""
+            )}
+          </p>
           <p className="text-white/60 text-xs">
-            Please don&apos;t navigate away until this completes.
+            Sending continues in the background — you can close this page.
           </p>
         </div>
       )}

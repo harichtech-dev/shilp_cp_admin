@@ -63,6 +63,12 @@ export const sendBulkVideo = async ({
   return res.data;
 };
 
+// 🔄 Poll bulk job status
+export const getBulkJobStatus = async (jobId: string) => {
+  const res = await api.get(`/whatsapp/bulk/${jobId}`);
+  return res.data;
+};
+
 // 📡 Check WhatsApp status (unchanged)
 export const getWhatsappStatus = async () => {
   const res = await api.get("/whatsapp/status");
