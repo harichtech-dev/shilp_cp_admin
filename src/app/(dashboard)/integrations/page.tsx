@@ -31,78 +31,123 @@ interface Integration {
 }
 
 export default function IntegrationsPage() {
+  // State management - integrations list, loading status, saving status
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
-  const [savingSlug, setSavingSlug] = useState<string | null>(null);
+  const [savingSlug, setSavingSlug] = useState<string | null>(null); // Kon sa integration save ho raha hai
   const router = useRouter();
-  const canAccess = useRequireAdmin();
+  const canAccess = useRequireAdmin(); // Admin access check - useRequireAdmin hook
 
+  /**
+   * loadIntegrations - Backend se integrations list fetch karte hain
+   * WATI, INTERAKT jaise sab integrations ke config aur status
+   */
   const loadIntegrations = async () => {
-  const data = await getIntegrations();
-  setIntegrations(data.data || []);
-};
+    // Backend API call - sab integrations fetch karte hain
+    const data = await getIntegrations();
+    // Response mein data array ko state mein set karte hain
+    setIntegrations(data.data || []);
+  };
 
+  /**
+   * useEffect - Component mount par integrations load karte hain
+   * Loading state manage karte hain, error handle karte hain
+   */
   useEffect(() => {
     (async () => {
       try {
+        // Backend se integrations fetch karte hain
         const data = await getIntegrations();
+        // State update karte hain
         setIntegrations(data.data || []);
       } catch (error) {
+        // Error ko console mein log karte hain
         console.error(error);
       } finally {
+        // Loading complete - state update karte hain
         setLoading(false);
       }
     })();
   }, []);
 
+  /**
+   * handleChange - Integration config fields ko update karte hain
+   * User input karte hain to immediately state mein reflect hota hai
+   * slug: kaun sa integration (wati/interakt)
+   * key: field name (apiUrl, token, channelNumber)
+   * value: user ka entered value
+   */
   const handleChange = (slug: string, key: string, value: string) => {
+    // Integrations array ko map karte hain aur matching integration ko update karte hain
     setIntegrations((prev) =>
       prev.map((int) =>
-        int.slug === slug
+        int.slug === slug // Matching integration find karte hain
           ? {
               ...int,
+              // Config object ko update karte hain - existing values + new value
               config: {
                 ...(int.config || {}),
                 [key]: value,
               },
             }
-          : int,
+          : int, // Non-matching integrations ko unchanged rakho
       ),
     );
   };
 
+  /**
+   * saveConfig - Integration config ko backend mein save karte hain
+   * WATI API URL, JWT Token, Channel Number jaise credentials save hote hain
+   */
   const saveConfig = async (slug: string, config: IntegrationConfig = {}) => {
     try {
+      // Saving state on - button disable hota hai loading ke liye
       setSavingSlug(slug);
 
+      // Backend API se config update karte hain
       const res = await updateIntegrationConfig(slug, config);
+      // Success message show karte hain
       toast.success(res.message || "Connected successfully");
+      // Integrations list ko refresh karte hain (updated status ke saath)
       await loadIntegrations();
     } catch (err: unknown) {
+      // Error message ko extract karte hain response se
       const message =
         (err as { response?: { data?: { message?: string } } }).response?.data
           ?.message || "Error saving config";
 
+      // User ko error message dikhate hain
       toast.error(message);
     } finally {
+      // Saving state off - button enable hota hai
       setSavingSlug(null);
     }
   };
 
+  /**
+   * toggleStatus - Integration ko connect/disconnect karte hain
+   * Connected status ko disconnected mein aur vice versa
+   */
   const toggleStatus = async (slug: string, status: string) => {
     try {
+      // Backend API se status toggle karte hain
       await updateIntegrationStatus(
         slug,
+        // Current status ke opposite mein change karte hain
         status === "connected" ? "disconnected" : "connected",
       );
+      // List ko refresh karte hain updated status ke saath
       await loadIntegrations();
     } catch (err) {
+      // Error ko log karte hain
       console.error(err);
     }
   };
 
+  // Admin access check - non-admin ko loading dikhe
   if (!canAccess) return <div className="p-6">Loading...</div>;
 
+  // Initial loading state
   if (loading) return <div className="p-6">Loading...</div>;
 
   return (

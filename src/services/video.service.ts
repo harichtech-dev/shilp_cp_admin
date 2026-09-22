@@ -1,12 +1,13 @@
 import { api } from "./api";
 
-// GET videos template
+/**
+ * GET VIDEO TEMPLATES - Sab available video templates
+ */
 export const getVideoTemplates = async () => {
   const res = await api.get("/videos/templates");
   return res.data;
 };
 
-// upload video template
 export const uploadVideoTemplate = async (
   file: File,
   layout: number,
@@ -14,8 +15,8 @@ export const uploadVideoTemplate = async (
 ) => {
   const formData = new FormData();
   formData.append("template", file);
-  formData.append("layout", String(layout));
-  formData.append("providers", JSON.stringify(providers)); // ✅ add this
+  formData.append("layout", String(layout)); // Layout type
+  formData.append("providers", JSON.stringify(providers)); // Which platforms use this
 
   const res = await api.post("/videos/upload-template", formData, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -24,7 +25,11 @@ export const uploadVideoTemplate = async (
   return res.data;
 };
 
-// send bulk video
+/**
+ * SEND BULK VIDEO - Template ko bulk mein send karna
+ * Input: templateId, platform, colors for customization
+ * Process: Sab users ko ye video send hoga
+ */
 export const sendBulkVideo = async ({
   templateId,
   platform,
@@ -46,6 +51,9 @@ export const sendBulkVideo = async ({
   return res.data;
 };
 
+/**
+ * DELETE VIDEO TEMPLATE - Video template delete karna
+ */
 export const deleteVideoTemplate = async (id: string) => {
   return api.delete(`/videos/templates/${id}`);
 };

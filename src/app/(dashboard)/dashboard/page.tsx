@@ -34,11 +34,6 @@ Chart.register(
   Tooltip,
   Filler,
 );
-
-/**
- * Formats "2026-05-08" → "May 8" for short display,
- * or "Mon" / "Day N" for 7-day range.
- */
 function formatLabel(dateStr: string, totalDays: number): string {
   if (totalDays === 7) {
     const day = new Date(dateStr).toLocaleDateString("en-US", {

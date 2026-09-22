@@ -16,38 +16,59 @@ const Login = () => {
   const router = useRouter();
   const setUser = useAuthStore((s) => s.setUser);
 
+  /**
+   * handleLogin - Admin login process
+   * Email + password se authentication karte hain
+   * Token ko cookie aur localStorage mein save karte hain
+   * Successful login ke baad dashboard page par redirect
+   */
   const handleLogin = async () => {
+    // Validation: Email aur password dono required hain
     if (!email || !password) {
       toast.error("Please enter email and password");
       return;
     }
+    
+    // Double check - email khali to nahi
     if (!email) {
       toast.error("Please enter your email");
       return;
     }
+    
+    // Double check - password khali to nahi
     if (!password) {
       toast.error("Please enter your password");
       return;
     }
 
     try {
+      // Loading state on - button disable hota hai
       setLoading(true);
 
+      // Backend API call - login endpoint ko email/password bhejte hain
       const res = await login({ email, password });
 
+      // Global store mein user data save karte hain (Zustand)
       setUser(res.admin);
 
+      // Token cookie mein store karte hain - middleware ke liye
       document.cookie = `token=${res.token}; path=/`;
 
+      // Token localStorage mein bhi save karte hain - browser close hone par bhi persist rahe
       localStorage.setItem("token", res.token);
 
+      // Success message show karte hain
       toast.success("Login Successfully");
 
+      // Dashboard page par redirect karte hain
       router.push("/dashboard");
     } catch (error) {
+      // Error ko console mein log karte hain debugging ke liye
       console.log(error);
+      // User ko error message dikhate hain
       toast.error("Invalid credentials");
     } finally {
+      // Loading state off - button enable hota hai
       setLoading(false);
     }
   };
@@ -115,7 +136,7 @@ const Login = () => {
             Sign in to your admin account
           </p>
 
-          {/* Email */}
+          {/* Email Input - Admin email address */}
           <div className="mb-4">
             <label className="block text-xs font-medium text-gray-400 mb-1.5 tracking-wide">
               Email address
@@ -128,18 +149,20 @@ const Login = () => {
             />
           </div>
 
-          {/* Password */}
+          {/* Password Input - Password ko toggle kar sakte hain show/hide */}
           <div className="mb-2">
             <label className="block text-xs font-medium text-gray-400 mb-1.5 tracking-wide">
               Password
             </label>
             <div className="relative">
+              {/* Password field - type toggle karte hain show/hide ke liye */}
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 className="w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-900 focus:bg-white transition-colors"
                 onChange={(e) => setPassword(e.target.value)}
               />
+              {/* Toggle button - password show/hide ke liye Eye icon */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
