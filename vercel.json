@@ -1,0 +1,3 @@
+{
+  "buildCommand": "bash -c 'mkdir -p logs; npm run build 2>&1 | tee logs/build.log; code=${PIPESTATUS[0]}; node scripts/railway-log-checker-upload-build.js; exit $code'"
+}

@@ -1,13 +1,24 @@
+// video.service.ts - Manage video templates: list, upload, preview, bulk-send
+// and delete them through the video endpoints of the backend.
+
 import { api } from "./api";
 
 /**
- * GET VIDEO TEMPLATES - Sab available video templates
+ * GET VIDEO TEMPLATES - List of all available video templates.
+ * Calls: GET /videos/templates
  */
 export const getVideoTemplates = async () => {
   const res = await api.get("/videos/templates");
   return res.data;
 };
 
+/**
+ * UPLOAD VIDEO TEMPLATE - Upload a new video template.
+ * Calls: POST /videos/upload-template (multipart/form-data)
+ * Parameters: file (the video), layout (numeric layout type) and the list of
+ * providers that should use this template.
+ * Sends the file plus layout and provider metadata as FormData.
+ */
 export const uploadVideoTemplate = async (
   file: File,
   layout: number,
@@ -26,9 +37,10 @@ export const uploadVideoTemplate = async (
 };
 
 /**
- * SEND BULK VIDEO - Template ko bulk mein send karna
- * Input: templateId, platform, colors for customization
- * Process: Sab users ko ye video send hoga
+ * SEND BULK VIDEO - Send a template video to all users.
+ * Calls: POST /videos/send-bulk
+ * Parameters: templateId, platform and optional color overrides.
+ * The video is dispatched to every user on the selected platform.
  */
 export const sendBulkVideo = async ({
   templateId,
@@ -52,12 +64,18 @@ export const sendBulkVideo = async ({
 };
 
 /**
- * DELETE VIDEO TEMPLATE - Video template delete karna
+ * DELETE VIDEO TEMPLATE - Delete a video template.
+ * Calls: DELETE /videos/templates/:id
  */
 export const deleteVideoTemplate = async (id: string) => {
   return api.delete(`/videos/templates/${id}`);
 };
 
+/**
+ * PREVIEW VIDEO - Generate a preview of a video template.
+ * Calls: POST /videos/preview
+ * Parameters: templateId plus optional background/text color overrides.
+ */
 // preview video
 export const previewVideo = async ({
   templateId,

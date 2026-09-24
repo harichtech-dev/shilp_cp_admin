@@ -1,8 +1,11 @@
+// dashboard.service.ts - Fetches dashboard statistics and chart data for the
+// admin overview page (stat cards plus delivery-volume and monthly graphs).
+
 import { api } from "./api";
 
 /**
- * DELIVERY VOLUME TYPE - Chart data ka structure
- * Labels mein dates, image/video arrays mein counts
+ * DELIVERY VOLUME TYPE - Shape of the delivery volume chart data.
+ * Labels hold dates, image/video arrays hold the matching daily counts.
  */
 export interface DeliveryVolume {
   labels: string[]; // Dates array - ["2026-05-08", "2026-05-09", ...]
@@ -11,7 +14,7 @@ export interface DeliveryVolume {
 }
 
 /**
- * MONTHLY MESSAGES TYPE - Monthly chart data
+ * MONTHLY MESSAGES TYPE - Shape of the monthly chart data.
  */
 export interface MonthlyMessages {
   labels: string[]; // Month names - ["Jan", "Feb", ...]
@@ -20,8 +23,9 @@ export interface MonthlyMessages {
 }
 
 /**
- * GET DASHBOARD STATS - Main dashboard statistics
- * Total users, total messages, success rate etc.
+ * GET DASHBOARD STATS - Main dashboard statistics.
+ * Calls: GET /dashboard/dashboard
+ * Returns: totals such as total users, total messages, success rate, etc.
  */
 export const getDashboardStats = async () => {
   const res = await api.get("/dashboard/dashboard");
@@ -29,9 +33,10 @@ export const getDashboardStats = async () => {
 };
 
 /**
- * GET DELIVERY VOLUME - Last N days ka message delivery count
- * Input: days (7, 14, ya 30)
- * Output: Chart ready data with labels aur counts
+ * GET DELIVERY VOLUME - Message delivery count for the last N days.
+ * Calls: GET /dashboard/delivery-volume?days=<n>
+ * Parameters: days (7, 14 or 30) - defaults to 7
+ * Returns: chart-ready data with labels and per-day counts.
  */
 export const getDeliveryVolume = async (
   days: 7 | 14 | 30 = 7,
@@ -43,8 +48,9 @@ export const getDeliveryVolume = async (
 };
 
 /**
- * GET MONTHLY MESSAGES - Pore saal ka monthly breakdown
- * Output: Monthly data for graph display
+ * GET MONTHLY MESSAGES - Monthly breakdown for the whole year.
+ * Calls: GET /dashboard/monthly-messages
+ * Returns: monthly data for the graph display.
  */
 export const getMonthlyMessages =
   async (): Promise<MonthlyMessages> => {

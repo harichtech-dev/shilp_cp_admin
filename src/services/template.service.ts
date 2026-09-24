@@ -1,8 +1,12 @@
+// template.service.ts - Create, list, delete and preview WhatsApp image/video
+// templates, including uploading them (with provider metadata) to the backend.
+
 import { api } from "./api";
 
 /**
- * GET TEMPLATES - Sab templates ki list lena
- * Output: Available image/video templates
+ * GET TEMPLATES - List of all templates.
+ * Calls: GET /whatsapp/templates
+ * Returns: the available image/video templates.
  */
 export const getTemplates = async () => {
   const res = await api.get("/whatsapp/templates");
@@ -10,10 +14,12 @@ export const getTemplates = async () => {
 };
 
 /**
- * UPLOAD TEMPLATE - Naya template upload karna
- * Input: file (image/video), providers array
- * Providers mein kaunsi platforms par ye template use hona hai
- * Process: FormData mein file aur metadata bhejte hain
+ * UPLOAD TEMPLATE - Upload a new template.
+ * Calls: POST /whatsapp/upload-template (multipart/form-data)
+ * Parameters: file (image/video), providers array (declares which platforms
+ * should use this template).
+ * Sends the file plus the provider metadata as a JSON-encoded string inside
+ * FormData.
  */
 export const uploadTemplate = async (file: File, providers: { platform: string; templateName: string; mediaType: string }[]) => {
   const formData = new FormData();
@@ -30,15 +36,18 @@ export const uploadTemplate = async (file: File, providers: { platform: string; 
 };
 
 /**
- * DELETE TEMPLATE - Existing template delete karna
+ * DELETE TEMPLATE - Delete an existing template.
+ * Calls: DELETE /whatsapp/templates/:id
+ * Parameters: id (the template's unique identifier)
  */
 export const deleteTemplate = async (id: string) => {
   return api.delete(`/whatsapp/templates/${id}`);
 };
 
 /**
- * PREVIEW IMAGE - Template ka preview dekh sakte hain
- * Customization ke saath (colors etc.)
+ * PREVIEW IMAGE - Generate a preview of a template image.
+ * Calls: POST /whatsapp/preview-image
+ * Parameters: templateId plus optional customization colors (bg/text/name).
  */
 export const previewImage = async ({
   templateId,

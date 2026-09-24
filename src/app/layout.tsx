@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner"; // Toast notifications ke liye
+import { Toaster } from "@/components/ui/sonner"; // For toast notifications
 
 /**
- * FONTS - Google fonts import kar rahe hain
- * Geist Sans aur Geist Mono dono available hain
+ * RootLayout - top-level wrapper for every page in the app.
+ * Loads the Google fonts (Geist Sans + Geist Mono) as CSS variables,
+ * exports global metadata, and mounts the <Toaster /> once so toast
+ * notifications work across all routes.
+ */
+
+/**
+ * FONTS - Google fonts
+ * Both Geist Sans and Geist Mono are configured here.
  */
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +25,7 @@ const geistMono = Geist_Mono({
 });
 
 /**
- * METADATA - Browser tab mein title, description, favicon etc.
+ * METADATA - browser tab title, description, and favicon
  */
 export const metadata: Metadata = {
   title: "Image Delivery",
@@ -29,8 +36,8 @@ export const metadata: Metadata = {
 };
 
 /**
- * ROOT LAYOUT COMPONENT - Puri app ka wrapper
- * Sab pages yahan ke children hote hain
+ * ROOT LAYOUT component - wraps the entire app
+ * Every page renders as a child of this layout.
  */
 export default function RootLayout({
   children,
@@ -45,11 +52,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {children}
         
-        {/* TOASTER - Global notification system */}
-        {/* Jab toast.success(), toast.error() etc. call hote hain to ye show hota hai */}
+        {/* TOASTER - global notification system */}
+        {/* Renders wherever toast.success(), toast.error(), etc. are called */}
         <Toaster
-          position="top-right" // Top right corner mein show hoga
-          theme="dark" // Dark theme
+          position="top-right" // Shows in the top-right corner
+          theme="dark" // Uses the dark theme
           toastOptions={{
             classNames: {
               toast: "bg-black text-white border border-white/10",

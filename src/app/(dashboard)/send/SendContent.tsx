@@ -15,6 +15,14 @@ import { getIntegrationStatus } from "@/services/integration.service";
 import { toast } from "sonner";
 import Image from "next/image";
 
+/**
+ * /send SendContent — Broadcast campaign page (client component).
+ * Loads users, image/video templates and connected integrations on mount,
+ * renders a live preview with debounced background/text color customization,
+ * and sends the chosen template to all recipients via the selected platform,
+ * polling the bulk-send job until it completes.
+ */
+
 interface User {
   _id: string;
   name: string;
@@ -48,6 +56,11 @@ interface RawVideoTemplate {
   previewUrl: string;
 }
 
+/**
+ * SendContent — Main send flow: template selection preview, color controls,
+ * platform picker, confirmation modal, and live progress overlay while
+ * polling the bulk job.
+ */
 export default function SendContent() {
   const searchParams = useSearchParams();
   const templateId = searchParams.get("template") ?? "";
@@ -74,7 +87,7 @@ export default function SendContent() {
   const [previewUrl, setPreviewUrl] = useState("");
   const [previewLoading, setPreviewLoading] = useState(false);
 
-  // Add state
+  // Color-customization state — background and text color used for preview + send
   const [bgColor, setBgColor] = useState("#E5C840");
   const [textColor, setTextColor] = useState("#1A1000");
 
@@ -161,6 +174,11 @@ export default function SendContent() {
   }, []); // ← runs ONCE on mount only
 
   // ─── DEBOUNCED: re-fetch preview whenever colors change (video only) ───────
+  /**
+   * refreshPreview — Regenerates the video/image preview for the given
+   * background and text colors. Called by the debounced color watcher to
+   * avoid hammering the preview API.
+   */
   const refreshPreview = useCallback(
     async (bg: string, text: string) => {
       if (!videoTemplateId && !templateId) return; 
@@ -200,7 +218,7 @@ export default function SendContent() {
     [videoTemplateId, templateId],
   );
 
-  // Watch bgColor
+  // Debounced preview refresh whenever bgColor/textColor change
   useEffect(() => {
     if (isInitialLoad.current) return; // skip — initial preview already fired
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -212,6 +230,10 @@ export default function SendContent() {
     };
   }, [bgColor, textColor, refreshPreview]);
 
+  /**
+   * handleSend — Entry point for the send button. Requires a selected
+   * template (image or video) and opens the confirmation modal.
+   */
   const handleSend = () => {
     if (!templateId && !videoTemplateId) {
       toast.error("No template selected");
@@ -221,7 +243,11 @@ export default function SendContent() {
     setShowConfirm(true); // open modal
   };
 
-  // Polls a background bulk job every 2s and updates real progress
+  /**
+   * pollBulkJob — Long-polls a bulk-send job every 2s, updating live
+   * progress (sent/delivered/failed). Resolves once the job is done or
+   * fails, and counts messages blocked by Meta's marketing limit.
+   */
   const pollBulkJob = async (jobId: string) => {
     while (true) {
       const res = await getBulkJobStatus(jobId);
@@ -259,7 +285,13 @@ export default function SendContent() {
     }
   };
 
+  /**
+   * confirmSend — Starts the broadcast. Sends the bulk image/video job with
+   * the selected platform and colors, then polls it to completion. Handles
+   * async (job poll) and legacy synchronous responses, plus error messages.
+   */
   const confirmSend = async () => {
+    // Reset progress and messaging state before the send starts
     setShowConfirm(false);
     setSending(true);
     setSentPct(0);
@@ -274,8 +306,8 @@ export default function SendContent() {
         res = await sendBulkVideo({
           templateId: videoTemplateId,
           platform,
-          bgColor, // ← add
-          textColor, // ← add
+          bgColor, // pass colors through to the send API
+          textColor, // pass colors through to the send API
         });
       } else {
         res = await sendBulkImage({
@@ -307,6 +339,7 @@ export default function SendContent() {
     }
   };
 
+  // Derived flags: platform connected, and the campaign finished successfully
   const isConnected = integrations.length > 0;
   const isSent = message.startsWith("Delivered");
 
@@ -554,7 +587,7 @@ export default function SendContent() {
               </div>
             )} */}
 
-            {/* Color Customization — only shown for video templates */}
+            {/* Color customization panel — shown when a template is selected */}
             {(videoTemplateId || templateId) && (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
@@ -838,6 +871,7 @@ export default function SendContent() {
         )}
       </div>
 
+      {/* Confirm campaign modal */}
       {showConfirm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
@@ -895,6 +929,7 @@ export default function SendContent() {
         </div>
       )}
 
+      {/* Full-screen overlay shown while the bulk job is running */}
       {sending && (
         <div className="fixed inset-0 bg-black/70 z-9999 flex flex-col items-center justify-center gap-4">
           <svg

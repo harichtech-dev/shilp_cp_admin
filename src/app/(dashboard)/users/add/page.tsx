@@ -7,6 +7,12 @@ import { toast } from "sonner";
 import Image from "next/image";
 import axios, { AxiosError } from "axios";
 
+/**
+ * Route: /users/add
+ * Form for creating a new user. Collects name, email, company, phone and an
+ * optional logo, validates locally, then POSTs via createUser. Axios errors
+ * are unwrapped so validation messages from the API are shown to the admin.
+ */
 type FormState = {
   name: string;
   email: string;
@@ -14,10 +20,16 @@ type FormState = {
   company: string;
 };
 type FormErrors = Partial<Record<keyof FormState, string>>;
+/**
+ * AddUser - Renders the "add new user" form.
+ * Validates required fields, sends the form data plus an optional logo via
+ * createUser, and navigates to /users on success.
+ */
 export default function AddUser() {
   const router = useRouter();
   const [errors, setErrors] = useState<FormErrors>({});
 
+  // Form fields bound to the inputs below
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
@@ -25,12 +37,18 @@ export default function AddUser() {
     company: "",
   });
 
+  // Optional logo file and submission loading flag
   const [logo, setLogo] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
+  /**
+   * validateForm - Checks that all required fields are filled.
+   * Stores per-field messages in state and returns whether the form is valid.
+   */
   const validateForm = () => {
     const newErrors: FormErrors = {};
 
+    // Mark each missing required field with an error message
     if (!form.name) newErrors.name = "Name is required";
     if (!form.email) newErrors.email = "Email is required";
     if (!form.company) newErrors.company = "Company is required";
@@ -40,13 +58,18 @@ export default function AddUser() {
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * handleSubmit - Creates the user after a successful validation.
+   * Shows loading, success and error toasts, then navigates to /users.
+   */
   const handleSubmit = async () => {
     if (!validateForm()) return;
-    const toastId = toast.loading("Creating user..."); // 👈 loading
+    const toastId = toast.loading("Creating user..."); // Show a loading toast while the request runs
 
     try {
       setLoading(true);
 
+      // Send the form data and optional logo to the API
       await createUser({
         ...form,
         logo,
@@ -58,6 +81,7 @@ export default function AddUser() {
     } catch (err: unknown) {
       console.error(err);
 
+      // Default message, then override with any error from the API response
       let message = "Failed to create user";
 
       if (axios.isAxiosError(err)) {

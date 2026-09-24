@@ -23,6 +23,13 @@ import {
   BarElement,
 } from "chart.js";
 
+/**
+ * /dashboard — Admin dashboard route (client component).
+ * Shows three stat cards and two Chart.js charts: a 7/14/30-day template
+ * creation trend (line) and monthly messages sent (bar). Data is loaded from
+ * dashboard.service asynchronously and charts are created/updated in effects.
+ */
+
 Chart.register(
   LineElement,
   PointElement,
@@ -34,6 +41,11 @@ Chart.register(
   Tooltip,
   Filler,
 );
+/**
+ * formatLabel — Formats a chart date label: weekday ("Mon") for 7-day
+ * ranges, otherwise a short month+day ("May 8"). Parsed in UTC so labels
+ * don't shift across time zones.
+ */
 function formatLabel(dateStr: string, totalDays: number): string {
   if (totalDays === 7) {
     const day = new Date(dateStr).toLocaleDateString("en-US", {
@@ -50,6 +62,11 @@ function formatLabel(dateStr: string, totalDays: number): string {
   }); // "May 8"
 }
 
+/**
+ * Page — Dashboard: guards the route via useAuth, loads aggregate stats,
+ * delivery volume (per selected range) and monthly totals, and renders the
+ * stat cards plus both charts.
+ */
 export default function Page() {
   const router = useRouter();
   useAuth();
@@ -203,6 +220,7 @@ export default function Page() {
     };
   }, [volumeData, range]);
 
+  // ── Render / update the monthly messages bar chart when data arrives ──
   useEffect(() => {
     if (!monthlyRef.current || !monthlyData) return;
 

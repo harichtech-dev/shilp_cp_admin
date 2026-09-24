@@ -11,6 +11,12 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Image from "next/image";
 
+/**
+ * Route: /users
+ * Lists all users in a table with search, pagination, CSV export, a
+ * registration-link copier, and per-user view/edit/delete/status actions.
+ * Also supports bulk activate/deactivate across the whole user list.
+ */
 interface User {
   _id: string;
   name: string;
@@ -27,8 +33,13 @@ interface Pagination {
   currentPage?: number;
 }
 
+/**
+ * UsersPage - Main users listing page.
+ * Manages fetching, searching and paginating users, plus CSV export,
+ * registration-link copy, single/bulk status toggles and deletion.
+ */
 export default function UsersPage() {
-  // State management - users list, search, pagination
+  // State management - users list, search term, and current page
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -37,89 +48,89 @@ export default function UsersPage() {
   });
   const router = useRouter();
 
-  // Bulk status logic - sab users active hain ya nahi check karte hain
-  // Agar sab active hain to next click se deactivate, else activate
+  // Bulk status logic - checks whether every user is currently active
+  // If all are active the next action deactivates them, otherwise it activates
   const allActive = users.length > 0 && users.every((user) => user.status === 1);
   const nextBulkStatus = allActive ? 0 : 1;
 
   /**
-   * downloadCSV - Users ka CSV file download karte hain
-   * User ID, Name, Email, Phone, Status, Registration Date ko export karte hain
-   * Browser se file download trigger hota hai
+   * downloadCSV - Exports the users list as a CSV file.
+   * Includes ID, Name, Email, Phone, Status and Registration Date,
+   * then triggers a browser download and releases the object URL.
    */
   const downloadCSV = () => {
-    // CSV headers define karte hain
+    // Define the CSV column headers
     const headers = ["ID", "Name", "Email", "Phone", "Status", "Register Date"];
 
-    // Users data ko formatted rows mein convert karte hain
+    // Map each user into a formatted row for the export
     const rows = users.map((user, index) => [
       index + 1,
       user.name,
       user.email,
       user.phone,
-      user.status === 1 ? "Active" : "Inactive", // Status ko readable text mein convert
-      new Date(user.createdAt).toLocaleDateString(), // Date ko formatted string mein
+      user.status === 1 ? "Active" : "Inactive", // Convert the status to readable text
+      new Date(user.createdAt).toLocaleDateString(), // Format the registration date
     ]);
 
-    // Headers + rows ko CSV format mein convert karte hain
+    // Build the CSV content from headers and rows
     const csvContent = [headers, ...rows]
       .map((row) =>
         row
-          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`) // Special chars ko escape
-          .join(","), // Columns ko comma se separate
+          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`) // Escape quotes and special characters
+          .join(","), // Join cells into a row with commas
       )
-      .join("\n"); // Rows ko newline se separate
+      .join("\n"); // Join rows with newlines
 
-    // CSV content ko Blob mein convert karte hain (file-like object)
+    // Wrap the CSV content in a Blob for download
     const blob = new Blob([csvContent], {
       type: "text/csv;charset=utf-8;",
     });
 
-    // Blob se download URL generate karte hain
+    // Create a temporary object URL for the Blob
     const url = URL.createObjectURL(blob);
 
-    // Temporary link element create karte hain
+    // Create a temporary anchor element to trigger the download
     const link = document.createElement("a");
     link.href = url;
-    link.download = `users-${new Date().toISOString().split("T")[0]}.csv`; // Filename - current date ke saath
-    link.click(); // Programmatically click karte hain - file download trigger
+    link.download = `users-${new Date().toISOString().split("T")[0]}.csv`; // Filename includes today's date
+    link.click(); // Programmatically click to download the file
 
-    // Memory cleanup - URL ko revoke karte hain
+    // Clean up memory by revoking the object URL
     URL.revokeObjectURL(url);
   };
 
   /**
-   * copyRegistrationLink - Registration link ko clipboard mein copy karte hain
-   * Users ko ye link diya ja sakta hai taaki wo register kar sakein
+   * copyRegistrationLink - Copies the public registration URL to the clipboard
+   * so admins can share it with users who need to register.
    */
   const copyRegistrationLink = async () => {
     try {
-      // Registration URL ko clipboard mein copy karte hain
+      // Copy the registration URL to the clipboard
       await navigator.clipboard.writeText("https://cp.shilpgroup.com/registration");
-      // Success message show karte hain
+      // Show a success message
       toast.success("Registration link copied to clipboard");
     } catch {
-      // Copy fail ho gaya to error message
+      // Show an error message if the copy fails
       toast.error("Failed to copy registration link");
     }
   };
 
   /**
-   * fetchUsers - API se users list fetch karte hain
-   * Page number aur search keyword ke sath pagination support
+   * fetchUsers - Fetches the users list from the API.
+   * Supports server-side pagination via page number and search keyword.
    */
   const fetchUsers = useCallback(async () => {
     // Backend API call with page and search parameters
     const res = await getUsers({ page, search });
 
-    // Response mein data array aur pagination details hote hain
+    // Response yields the data array and pagination details
     setUsers(res.data || res);
     setPagination(res.pagination);
   }, [page, search]);
 
   /**
-   * useEffect - Component mount hone par users load karte hain
-   * Page ya search change hone par bhi re-fetch hota hai
+   * useEffect - Loads users on mount and re-fetches whenever
+   * the page number or search term changes.
    */
   useEffect(() => {
     const loadUsers = async () => {
@@ -130,26 +141,26 @@ export default function UsersPage() {
   }, [fetchUsers]);
 
   /**
-   * handleDelete - Single user ko delete karte hain
-   * Confirmation dialog dikhate hain delete se pehle
+   * handleDelete - Deletes a single user after a confirmation dialog.
+   * Refetches the list once the deletion succeeds.
    */
   const handleDelete = async (_id: string) => {
-    // Confirmation toast show karte hain
+    // Show a confirmation toast before deleting
     const toastId = toast("Are you sure you want to delete this user?", {
       action: {
         label: "Delete",
         onClick: async () => {
           try {
-            // Confirmation dialog ko close karte hain
+            // Dismiss the confirmation toast
             toast.dismiss(toastId);
 
-            // Backend API se user delete karte hain
+            // Delete the user via the API
             await deleteUser(_id);
 
             // Success message
             toast.success("User deleted successfully");
 
-            // Users list ko re-fetch karte hain (updated data)
+            // Re-fetch the list with updated data
             fetchUsers();
           } catch {
             toast.error("Failed to delete user");
@@ -160,16 +171,16 @@ export default function UsersPage() {
   };
 
   /**
-   * handleStatus - Single user ka status change karte hain (active/inactive)
-   * currentStatus pass karte hain aur toggle hota hai
+   * handleStatus - Toggles a single user's status (active/inactive).
+   * Sends the current status to the API and refreshes the list on success.
    */
   const handleStatus = async (_id: string, currentStatus: number) => {
     try {
-      // API call se status update karte hain
+      // Update the status via the API
       const res = await handleStats(_id, currentStatus);
       if (res.success) {
         toast.success("Status updated successfully");
-        // List ko refresh karte hain updated status ke saath
+        // Refresh the list with the updated status
         fetchUsers();
       } else {
         toast.error("Failed to update status");
@@ -180,28 +191,28 @@ export default function UsersPage() {
   };
 
   /**
-   * handleBulkStatus - Sab users ka status ek saath change karte hain
-   * Sab active ho to deactivate, else activate
+   * handleBulkStatus - Activates or deactivates every user at once.
+   * Shows a confirmation first, then updates all users via the API.
    */
   const handleBulkStatus = () => {
     const status = nextBulkStatus;
     const label = status === 1 ? "activate" : "deactivate";
     
-    // Confirmation dialog show karte hain
+    // Show a confirmation dialog before applying to all users
     const toastId = toast(`Are you sure you want to ${label} ALL users?`, {
       action: {
         label: status === 1 ? "Activate All" : "Deactivate All",
         onClick: async () => {
           try {
-            // Confirmation dialog ko close karte hain
+            // Dismiss the confirmation dialog
             toast.dismiss(toastId);
 
-            // Backend API se bulk status update karte hain
+            // Update all users' status via the API
             const res = await updateAllUsersStatus(status);
 
             if (res.success) {
               toast.success(`All users ${label}d successfully`);
-              // List ko refresh karte hain
+              // Refresh the list
               fetchUsers();
             } else {
               toast.error(`Failed to ${label} all users`);
@@ -261,6 +272,7 @@ export default function UsersPage() {
         placeholder="Search users..."
         value={search}
         onChange={(e) => {
+          // Reset to the first page whenever the search term changes
           setPage(1);
           setSearch(e.target.value);
         }}

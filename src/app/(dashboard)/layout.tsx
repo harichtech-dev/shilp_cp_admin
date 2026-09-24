@@ -70,14 +70,23 @@ import Sidebar from "@/components/layout/sidebar";
 import Navbar from "@/components/layout/navbar";
 import { useState } from "react";
 
+/**
+ * DashboardLayout - shell that wraps every authenticated dashboard route.
+ * Renders the sidebar (desktop static + mobile drawer), the top navbar,
+ * and the active page content via {children}. Requiring admin auth here
+ * guards all child routes at once.
+ */
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Route guard - only signed-in admins can access dashboard routes.
   useAuth();
 
+  // Controls the mobile sidebar drawer (overlay on small screens).
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Controls the desktop sidebar collapse (icon-only mode).
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -91,6 +100,7 @@ export default function DashboardLayout({
           ${collapsed ? "w-20" : "w-64"}
         `}
       >
+        {/* Desktop sidebar - width follows the collapse state. */}
         <Sidebar
           collapsed={collapsed}
           setCollapsed={setCollapsed}
@@ -99,7 +109,7 @@ export default function DashboardLayout({
       </div>
 
       {/* ── Mobile sidebar — fixed overlay drawer ── */}
-      {/* Backdrop */}
+      {/* Backdrop - clicking it closes the drawer */}
       <div
         className={`
           fixed inset-0 bg-black/40 z-40 lg:hidden
@@ -116,6 +126,7 @@ export default function DashboardLayout({
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
+        {/* Mobile drawer sidebar - always full width, slides in and out. */}
         <Sidebar
           collapsed={false}
           setCollapsed={setCollapsed}
@@ -125,7 +136,9 @@ export default function DashboardLayout({
 
       {/* ── Main content ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Navbar - its menu button opens the mobile sidebar drawer. */}
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
+        {/* Active route content renders here. */}
         <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
       </div>
 
