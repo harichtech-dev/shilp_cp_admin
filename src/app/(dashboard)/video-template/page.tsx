@@ -10,6 +10,13 @@ import {
 import { toast } from "sonner";
 import { getTemplates } from "@/services/template.service";
 
+/**
+ * /video-template — Video Templates admin page (client component).
+ * Lists video templates in a grid, links each to the send flow, and lets the
+ * admin upload a new video (with WATI template name + layout) or delete one
+ * after confirmation.
+ */
+
 interface Template {
   _id : string;
   id: string;
@@ -18,6 +25,10 @@ interface Template {
   layout: number;
 }
 
+/**
+ * VideoTemplatePage — Renders the template grid and upload modal. Handles
+ * fetching, uploading (WATI register) and deleting video templates.
+ */
 export default function VideoTemplatePage() {
   // State management - templates, loading, uploading
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -25,7 +36,7 @@ export default function VideoTemplatePage() {
   const [uploading, setUploading] = useState(false);
   
   // Modal and form states
-  const [showModal, setShowModal] = useState(false); // WATI name enter karne ka modal
+  const [showModal, setShowModal] = useState(false); // modal for entering the WATI template name
   const [watiTemplateName, setWatiTemplateName] = useState("property_video_share_one"); // WATI template name
   
   // File and video configuration
@@ -35,7 +46,7 @@ export default function VideoTemplatePage() {
   const fileRef = useRef<HTMLInputElement>(null); // File input reference
 
   /**
-   * fetchTemplates - Backend se video templates fetch karte hain
+   * fetchTemplates - Fetches video templates from the backend
    */
   const fetchTemplates = async () => {
     try {
@@ -53,12 +64,12 @@ export default function VideoTemplatePage() {
   };
 
   /**
-   * useEffect - Component mount par templates load karte hain
+   * useEffect - Loads templates when the component mounts
    */
   useEffect(() => {
     const loadTemplates = async () => {
       try {
-        // Backend se video templates fetch karte hain
+        // Fetch video templates from the backend
         const data = await getVideoTemplates();
 
         if (data.success) {
@@ -76,23 +87,23 @@ export default function VideoTemplatePage() {
   }, []);
 
   /**
-   * handleFileSelect - Step 1: Video file select hone par modal show karte hain
-   * Modal mein WATI template name + layout selection hota hai
+   * handleFileSelect - Step 1: Opens the modal when a video file is selected.
+   * The modal collects the WATI template name and lets the admin pick a layout.
    */
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // File input se pehla file select karte hain
+    // Take the first file selected in the input
     const selected = e.target.files?.[0];
     if (!selected) return;
     
-    // File ko state mein store karte hain
+    // Store the selected file in state
     setFile(selected);
-    // Modal show karte hain - admin WATI name enter kar sakta hai
+    // Open the modal so the admin can enter the WATI template name
     setShowModal(true);
   };
 
   /**
-   * handleConfirmUpload - Step 2: Modal confirmation mein video upload start hota hai
-   * Video ko WATI provider ke saath + layout info
+   * handleConfirmUpload - Step 2: Starts the upload once the modal is
+   * confirmed, registering the video with the WATI provider with layout info.
    */
   const handleConfirmUpload = async () => {
     // Validation
@@ -100,14 +111,14 @@ export default function VideoTemplatePage() {
     
     // Modal close
     setShowModal(false);
-    // Loading toast show karte hain
+    // Show a loading toast for the upload
     const toastId = toast.loading("Uploading video...");
 
     try {
       // Upload state on
       setUploading(true);
       
-      // Provider configuration - WATI ke saath
+      // Provider configuration — registering the video with WATI
       const providers = [
         {
           platform: "wati",
@@ -116,13 +127,13 @@ export default function VideoTemplatePage() {
         },
       ];
 
-      // Backend API - file, layout, providers ke saath upload
+      // Upload via the backend API with file, layout and providers
       const res = await uploadVideoTemplate(file, layout, providers);
 
       if (res.success) {
         // Success message
         toast.success("Video uploaded successfully", { id: toastId });
-        // Templates list refresh karte hain
+        // Refresh the template list so the new item appears
         fetchTemplates();
       } else {
         toast.error(res.message || "Upload failed", { id: toastId });
@@ -142,7 +153,7 @@ export default function VideoTemplatePage() {
   };
 
   /**
-   * handleDelete - Video template ko delete karte hain with confirmation
+   * handleDelete - Deletes a video template after showing a confirmation toast
    */
   const handleDelete = (id: string) => {
     // Confirmation toast

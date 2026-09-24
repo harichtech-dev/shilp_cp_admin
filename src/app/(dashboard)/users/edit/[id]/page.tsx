@@ -6,9 +6,15 @@ import { getUserById, updateUser } from "@/services/user.service";
 import { toast } from "sonner";
 import Image from "next/image";
 
+/**
+ * Route: /users/edit/[id]
+ * Form for editing an existing user. Pre-fills the form by fetching the user
+ * by route id, allows updating the fields plus an optional new logo, then
+ * calls updateUser and returns to /users.
+ */
 export default function EditUser() {
   const router = useRouter();
-  const { id } = useParams();
+  const { id } = useParams(); // The id of the user being edited, from the route
 
   const [form, setForm] = useState({
     name: "",
@@ -18,11 +24,12 @@ export default function EditUser() {
     role: "",
   });
 
+  // New logo file (if replaced), existing logo URL, and submission flag
   const [logo, setLogo] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>(""); // existing logo
+  const [preview, setPreview] = useState<string>(""); // Existing logo shown until replaced
   const [loading, setLoading] = useState(false);
 
-  // 🔹 Fetch user
+  // Load the existing user data on mount so the form can be pre-filled
   useEffect(() => {
     const fetchUser = async () => {
       const user = await getUserById(id as string);
@@ -35,18 +42,23 @@ export default function EditUser() {
         role: user.role || "",
       });
 
-      setPreview(user.logo); // existing image
+      setPreview(user.logo); // Keep the existing logo as the preview
     };
 
     fetchUser();
   }, [id]);
 
-  // 🔹 Submit
+  /**
+   * handleSubmit - Persists the edited fields plus the optional new logo.
+   * Shows a loading toast, updates via the API and navigates back to the
+   * users list. API or generic errors surface in an error toast.
+   */
   const handleSubmit = async () => {
     const toastId = toast.loading("Updating user...");
     try {
       setLoading(true);
 
+      // Send the updated form data and the (optional) new logo
       await updateUser(id as string, {
         ...form,
         logo,

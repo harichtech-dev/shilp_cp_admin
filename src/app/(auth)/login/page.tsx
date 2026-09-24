@@ -8,7 +8,14 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
 
+/**
+ * Route: /login
+ * Channel Partner Admin login screen with a split layout: a brand image on
+ * the left and the login form on the right. Authenticates against the API,
+ * stores the token in a cookie plus localStorage, and redirects to /dashboard.
+ */
 const Login = () => {
+  // Form state - email, password, loading flag and password visibility
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,58 +24,58 @@ const Login = () => {
   const setUser = useAuthStore((s) => s.setUser);
 
   /**
-   * handleLogin - Admin login process
-   * Email + password se authentication karte hain
-   * Token ko cookie aur localStorage mein save karte hain
-   * Successful login ke baad dashboard page par redirect
+   * handleLogin - Admin login flow.
+   * Authenticates with email and password, then stores the token in a cookie
+   * and localStorage so the session persists. Redirects to the dashboard
+   * on success and shows an error toast on failure.
    */
   const handleLogin = async () => {
-    // Validation: Email aur password dono required hain
+    // Validation: both email and password are required
     if (!email || !password) {
       toast.error("Please enter email and password");
       return;
     }
     
-    // Double check - email khali to nahi
+    // Double-check that the email is not blank
     if (!email) {
       toast.error("Please enter your email");
       return;
     }
     
-    // Double check - password khali to nahi
+    // Double-check that the password is not blank
     if (!password) {
       toast.error("Please enter your password");
       return;
     }
 
     try {
-      // Loading state on - button disable hota hai
+      // Turn on the loading state to disable the button
       setLoading(true);
 
-      // Backend API call - login endpoint ko email/password bhejte hain
+      // Call the login API with the entered email and password
       const res = await login({ email, password });
 
-      // Global store mein user data save karte hain (Zustand)
+      // Persist the admin user data in the global Zustand store
       setUser(res.admin);
 
-      // Token cookie mein store karte hain - middleware ke liye
+      // Store the token in a cookie so the middleware can validate requests
       document.cookie = `token=${res.token}; path=/`;
 
-      // Token localStorage mein bhi save karte hain - browser close hone par bhi persist rahe
+      // Also persist the token in localStorage so the session survives reloads
       localStorage.setItem("token", res.token);
 
-      // Success message show karte hain
+      // Show a success toast
       toast.success("Login Successfully");
 
-      // Dashboard page par redirect karte hain
+      // Redirect to the dashboard
       router.push("/dashboard");
     } catch (error) {
-      // Error ko console mein log karte hain debugging ke liye
+      // Log the error to the console for debugging
       console.log(error);
-      // User ko error message dikhate hain
+      // Show a generic error message to the user
       toast.error("Invalid credentials");
     } finally {
-      // Loading state off - button enable hota hai
+      // Turn off the loading state to re-enable the button
       setLoading(false);
     }
   };
@@ -149,20 +156,20 @@ const Login = () => {
             />
           </div>
 
-          {/* Password Input - Password ko toggle kar sakte hain show/hide */}
+          {/* Password input with show/hide toggle */}
           <div className="mb-2">
             <label className="block text-xs font-medium text-gray-400 mb-1.5 tracking-wide">
               Password
             </label>
             <div className="relative">
-              {/* Password field - type toggle karte hain show/hide ke liye */}
+              {/* Field type toggles between text and password for visibility */}
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 className="w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-900 focus:bg-white transition-colors"
                 onChange={(e) => setPassword(e.target.value)}
               />
-              {/* Toggle button - password show/hide ke liye Eye icon */}
+              {/* Toggle button that shows or hides the password */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}

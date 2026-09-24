@@ -10,12 +10,23 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 
+/**
+ * Route: /image-template
+ * Manages image templates used for WhatsApp image campaigns. Lists uploaded
+ * templates, supports upload (with a WATI template name) and delete, and
+ * links each template to the send campaign flow.
+ */
 interface Template {
   id: string;
   name: string;
   image: string;
 }
 
+/**
+ * Page - Image template library for WhatsApp marketing.
+ * Loads templates on mount, uploads new ones through a confirmation modal,
+ * and lets admins delete existing templates.
+ */
 const Page = () => {
   // State management - templates list, loading, uploading
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -29,8 +40,8 @@ const Page = () => {
   const [templateName, setTemplateName] = useState("property_details_share_"); // WATI template name
 
   /**
-   * fetchTemplates - Backend se sab image templates fetch karte hain
-   * Templates ko state mein set karte hain, loading state manage karte hain
+   * fetchTemplates - Fetches all image templates from the backend.
+   * Stores the returned templates in state and manages the loading state.
    */
   const fetchTemplates = async () => {
     try {
@@ -48,36 +59,35 @@ const Page = () => {
   };
 
   /**
-   * handleFileSelect - File input se file select hone par modal show karte hain
-   * Modal mein admin WATI template name enter kar sakte hain
+   * handleFileSelect - Opens the modal when a file is selected.
+   * In the modal the admin can enter the WATI template name.
    */
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // File ke array mein se pehla file select karte hain
+    // Take the first selected file from the input
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // File ko temporary state mein store karte hain
+    // Store the selected file in temporary state
     setPendingFile(file);
-    // Modal show karte hain - admin template name enter kar sakta hai
+    // Open the modal so the admin can enter the template name
     setShowModal(true);
   };
 
   /**
-   * handleConfirmUpload - Modal confirmation mein upload start hota hai
-   * File ko WATI provider ke saath upload karte hain
-   * Upload success par templates list refresh karte hain
+   * handleConfirmUpload - Starts the upload when the modal is confirmed.
+   * Uploads the file to the WATI provider and refreshes the template list.
    */
   const handleConfirmUpload = async () => {
-    // Validation - file aur template name required
+    // Validation: a file and a template name are required
     if (!pendingFile || !templateName) return;
 
     try {
-      // Upload state on
+      // Turn on the uploading state
       setUploading(true);
-      // Modal close
+      // Close the modal
       setShowModal(false);
 
-      // Provider object - WATI template name ke saath
+      // Provider entry carries the WATI template name
       const providers = [
         { 
           platform: "wati", 
@@ -86,13 +96,13 @@ const Page = () => {
         },
       ];
 
-      // Backend API se upload karte hain
+      // Upload the file to the backend API
       const res = await uploadTemplate(pendingFile, providers);
 
       if (res.success) {
         // Success message
         toast.success("Template uploaded successfully");
-        // Templates list refresh karte hain
+        // Refresh the templates list
         fetchTemplates();
       } else {
         toast.error(res.message || "Upload failed");
@@ -100,23 +110,23 @@ const Page = () => {
     } catch {
       toast.error("Upload failed");
     } finally {
-      // Upload state off
+      // Turn off the uploading state
       setUploading(false);
-      // Form reset karte hain
+      // Reset the form fields
       setTemplateName("");
       setPendingFile(null);
-      // File input clear karte hain
+      // Clear the file input value
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   /**
-   * useEffect - Component mount par templates load karte hain
+   * useEffect - Loads templates when the component mounts.
    */
   useEffect(() => {
     const loadTemplates = async () => {
       try {
-        // Backend se templates fetch karte hain
+        // Fetch templates from the backend
         const data = await getTemplates();
 
         if (data.success) {
@@ -134,23 +144,23 @@ const Page = () => {
   }, []);
 
   /**
-   * handleDelete - Template ko delete karte hain with confirmation
-   * id: template ID jo delete karna hai
+   * handleDelete - Deletes a template after user confirmation.
+   * id: the template ID to delete
    */
   const handleDelete = (id: string) => {
-    // Confirmation toast show karte hain
+    // Show a confirmation toast
     const toastId = toast("Are you sure you want to delete?", {
       action: {
         label: "Delete",
         onClick: async () => {
           try {
-            // Confirmation dialog close
+            // Dismiss the confirmation dialog
             toast.dismiss(toastId);
-            // Backend API se delete karte hain
+            // Delete the template via the backend API
             await deleteTemplate(id);
             // Success message
             toast.success("Template deleted");
-            // Templates list refresh karte hain
+            // Refresh the templates list
             fetchTemplates();
           } catch {
             toast.error("Delete failed");
@@ -295,7 +305,7 @@ const Page = () => {
         </div>
       )}
 
-      {/* ✅ Add this modal */}
+      {/* Upload confirmation modal */}
       {showModal && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"

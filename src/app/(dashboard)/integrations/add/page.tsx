@@ -6,27 +6,36 @@ import { useRouter } from "next/navigation";
 import { useRequireAdmin } from "@/hooks/useRequireAdmin";
 
 /**
+ * Route: /integrations/add
+ * Form to create a new messaging integration. The admin enters a provider
+ * name, which is POSTed along with a slug and the standard config fields.
+ */
+
+/**
  * Component: AddIntegrationPage
- * Ye component naya integration add karne ka form dikhata hai
- * User ko integration name enter karna padta hai aur fir submit karne se
- * API ko POST request jaati hai jo integration create ho jati hai
+ * Renders the form for adding a new integration. The admin enters a provider
+ * name and, on submit, a POST request creates the integration via the API.
  */
 export default function AddIntegrationPage() {
   const router = useRouter();
-  const canAccess = useRequireAdmin(); // Check karte hain ki admin hai ya nahi
-  const [name, setName] = useState(""); // Integration ka naam store karne ke liye
+  const canAccess = useRequireAdmin(); // Verifies the admin is authenticated
+  const [name, setName] = useState(""); // Holds the integration name entered by the admin
 
 
-  // Naya integration create karne ka function - API ko data bhejta hai
+  /**
+   * handleCreate - Creates a new integration by POSTing its details to the API.
+   * On success the admin is redirected to the integrations list; failures are
+   * logged to the console.
+   */
   const handleCreate = async () => {
     try {
-      // Backend ko integration ki details bhej rahe hain
+      // Send the integration details to the backend
       await api.post("/integrations", {
-        name, // Integration ka naam
-        slug: name.toLowerCase(), // URL friendly naam
-        connectionType: "api_url_token", // Authentication type
+        name, // The integration name
+        slug: name.toLowerCase(), // URL-friendly slug derived from the name
+        connectionType: "api_url_token", // Authentication type used by the provider
 
-        // Integration ke liye required fields - ye fields user ko dikhenge
+        // Required fields the admin will fill in for this integration
         fields: [
           {
             key: "apiUrl",
@@ -49,22 +58,22 @@ export default function AddIntegrationPage() {
         ],
       });
 
-      // Success ho to integrations list page par chale jao
+      // Navigate to the integrations list on success
       router.push("/integrations");
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Agar admin nahi hai to loading dikha
+  // Show a loading state until admin access is confirmed
   if (!canAccess) return <div className="p-6">Loading...</div>;
 
-  // Return - Form dikhana jo integration add karne ke liye
+  // Render the form for adding a new integration
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-xl font-bold">Add Integration</h1>
 
-      {/* Integration ka naam enter karne ke liye input field */}
+      {/* Input for the integration name (e.g. wati / interakt) */}
       <input
         placeholder="Integration Name (wati / interakt)"
         value={name}
@@ -72,7 +81,7 @@ export default function AddIntegrationPage() {
         className="border p-2 w-full rounded"
       />
 
-      {/* Submit button - Click karne se handleCreate function call hoga */}
+      {/* Submit button that triggers handleCreate on click */}
       <button
         onClick={handleCreate}
         className="bg-black text-white px-4 py-2 rounded"

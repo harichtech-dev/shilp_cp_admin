@@ -1,13 +1,19 @@
+// middleware.ts - Route-level authentication guard for the admin app.
+// Runs on matching routes (see config.matcher) and blocks unauthenticated
+// access by redirecting to /login when no token cookie is present.
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 /**
- * MIDDLEWARE FUNCTION - Request check karne ke liye
+ * MIDDLEWARE FUNCTION - Guards protected routes.
+ * The presence of the auth token cookie is checked before the request
+ * proceeds; missing tokens are redirected to /login.
  */
 export function middleware(req: NextRequest) {
-  const token = req.cookies.get("token"); // Cookie se token nikala
+  const token = req.cookies.get("token"); // Read the auth token from the request cookie
 
-  // Protected routes jo login ke baad accessible hain
+  // Protected routes that are only accessible after login
   const protectedRoutes = [
     "/dashboard",
     "/users",
@@ -17,23 +23,23 @@ export function middleware(req: NextRequest) {
     "/video-template",
   ];
 
-  // Check karte hain ki current route protected hai ya nahi
+  // Check whether the current route matches a protected route
   const isProtectedRoute = protectedRoutes.some((route) =>
     req.nextUrl.pathname.startsWith(route)
   );
 
-  // Agar protected route hai aur token nahi hai to login par redirect
+  // If a protected route has no token, redirect to the login page
   if (isProtectedRoute && !token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Sab theek hai to next request allow kar do
+  // Everything is fine - allow the request to continue
   return NextResponse.next();
 }
 
 /**
- * CONFIG - Ye define karta hai ki middleware kaun kaun routes par run ho
- * Matcher mein diye routes par hi ye middleware check karega
+ * CONFIG - Defines which routes run through the middleware.
+ * Only the matcher patterns below are checked by this middleware.
  */
 export const config = {
   matcher: [

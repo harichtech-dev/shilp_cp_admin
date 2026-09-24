@@ -2,24 +2,34 @@
 
 import { useAuthStore } from "@/store/auth.store";
 
+/**
+ * Navbar - top bar shown on every dashboard page.
+ * Includes the mobile hamburger menu button (onMenuClick), the page title,
+ * and the admin name/avatar on the right.
+ */
 type Props = {
   onMenuClick?: () => void;
   // collapsed: boolean;
   // setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+/**
+ * Navbar - renders the dashboard's top bar.
+ * Draws the mobile menu toggle, the active page title, and the admin
+ * avatar/role label sourced from the auth store.
+ */
 export default function Navbar({
   onMenuClick,
 }: Props) {
-  // Global store se user data fetch karte hain (admin name, etc)
+  // Fetch the signed-in user (name, role, etc.) from the global store
   const user = useAuthStore((s) => s.user);
 
   return (
-    // Navbar container - fixed height, white background, border
+    // Header container - fixed height, white background, bottom border
     <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-      {/* Left Section - Mobile menu button aur page title */}
+      {/* Left section - mobile menu button and page title */}
       <div className="flex items-center gap-3">
-        {/* Mobile Menu Button - Mobile devices par click karte hain to sidebar open hota hai */}
+        {/* Mobile menu button - opens the sidebar drawer on small screens */}
         <button onClick={onMenuClick} className="lg:hidden">
           <svg
             width="22"
@@ -46,7 +56,7 @@ export default function Navbar({
       <div className="flex items-center gap-3">
         {/* Admin role label */}
         <span className="text-sm text-gray-500">Admin</span>
-        {/* Avatar circle - Sirf 'A' letter show karte hain */}
+        {/* Avatar circle - shows the user's initial */}
         <div className="w-8 h-8 bg-black text-white text-sm flex items-center justify-center rounded-full font-medium">
           A
         </div>

@@ -13,47 +13,56 @@ import {
 } from "lucide-react";
 import { ChevronLeft } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
+
+/**
+ * Sidebar - main navigation rail for the admin panel.
+ */
 type Props = {
   closeSidebar?: () => void;
   collapsed?: boolean;
   setCollapsed?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+/**
+ * Sidebar - renders the navigation rail.
+ * Highlights the active link by matching the pathname, hides admin-only
+ * links from non-admin users, supports a desktop collapsed/expanded mode
+ * and a mobile drawer (closeSidebar), and confirms before signing out.
+ */
 export default function Sidebar({
   closeSidebar,
   collapsed,
   setCollapsed,
 }: Props) {
-  // Router navigation ke liye
+  // For programmatic navigation (e.g. redirecting after logout)
   const router = useRouter();
-  // Current page path - highlight karne ke liye active link
+  // Current route - used to highlight the active link
   const pathname = usePathname();
-  // Logout confirmation dialog ka state
+  // Tracks whether the logout confirmation dialog is open
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  // Global store se user data - role check karne ke liye (admin-only links)
+  // Signed-in user from the global store - gates the admin-only links
   const user = useAuthStore((s) => s.user);
 
   /**
-   * handleLogout - Admin ko logout karte hain
-   * Token ko remove karte hain localStorage se
-   * Login page par redirect karte hain
+   * handleLogout - signs the admin out
+   * Removes the token from localStorage and redirects to the login page.
    */
   const handleLogout = () => {
-    // Token ko remove karte hain - ab protected routes accessible nahi honge
+    // Remove the token so protected routes become inaccessible
     localStorage.removeItem("token");
-    // Login page par redirect karte hain
+    // Redirect to the login page
     router.push("/login");
   };
 
   /**
-   * linkClass - Navigation link ko styling dete hain
-   * Active link ko black background, inactive ko hover effect
+   * linkClass - generates the styling for a navigation link
+   * The active link gets a black background; inactive links get a hover effect.
    */
   const linkClass = (path: string) =>
     `flex items-center rounded-xl text-sm transition-all duration-200 py-3 ${
-      pathname === path // Current page check karte hain
-        ? "bg-black text-white font-medium" // Active - black background
-        : "text-gray-500 hover:bg-gray-100 hover:text-black" // Inactive - hover effect
+      pathname === path // True when the link matches the current route
+        ? "bg-black text-white font-medium" // Active link styling
+        : "text-gray-500 hover:bg-gray-100 hover:text-black" // Inactive link styling
     }`;
 
   return (
@@ -71,9 +80,9 @@ export default function Sidebar({
               collapsed ? "justify-center" : "justify-between"
             }`}
           >
-            {/* Logo - Collapsed state mein sirf 'A' letter, expanded mein full text */}
+            {/* Logo - shows just "A" when collapsed, full text when expanded */}
             {collapsed ? (
-              // Collapsed state - sirf letter A dikhata hai, click karte hain to expand
+              // Collapsed state shows only "A"; clicking expands the sidebar
               <button
                 onClick={() => setCollapsed?.(false)}
                 className="w-10 h-8 rounded-lg bg-black text-white flex items-center justify-center font-semibold text-sm"
@@ -81,7 +90,7 @@ export default function Sidebar({
                 A
               </button>
             ) : (
-              // Expanded state - full "Admin Panel" text + collapse button
+              // Expanded state - full "Admin Panel" text plus the collapse button
               <>
                 <Link href="/dashboard">
                   <div className="text-lg font-bold tracking-tight">
@@ -89,7 +98,7 @@ export default function Sidebar({
                   </div>
                 </Link>
 
-                {/* Collapse Button - Desktop only, sidebar ko minimize karte hain */}
+                {/* Collapse button - desktop only; minimizes the sidebar */}
                 <button
                   onClick={() => setCollapsed?.(true)}
                   className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
@@ -114,7 +123,7 @@ export default function Sidebar({
             {!collapsed && <span>Dashboard</span>}
           </Link>
 
-          {/* Users Management Link - User list aur operations */}
+          {/* Users management link - user listing and operations */}
           <Link
             href="/users"
             onClick={closeSidebar}
@@ -126,7 +135,7 @@ export default function Sidebar({
             {!collapsed && <span>Users</span>}
           </Link>
           
-          {/* Image Templates Link - Image uploads aur management */}
+          {/* Image templates link - image uploads and management */}
           <Link
             href="/image-template"
             onClick={closeSidebar}
@@ -138,7 +147,7 @@ export default function Sidebar({
             {!collapsed && <span>Image Templates</span>}
           </Link>
 
-          {/* Video Templates Link - Video uploads aur management */}
+          {/* Video templates link - video uploads and management */}
           <Link
             href="/video-template"
             onClick={closeSidebar}
@@ -151,6 +160,7 @@ export default function Sidebar({
           </Link>
 
           {/* Admin-only Link - Integrations management (WATI, INTERAKT) */}
+          {/* Only rendered when the signed-in user has the admin role */}
           {user?.role === "admin" && (
             <Link
               href="/integrations"
@@ -165,9 +175,9 @@ export default function Sidebar({
           )}
         </nav>
 
-        {/* Logout Button - Bottom fixed section */}
+        {/* Logout button - pinned to the bottom of the sidebar */}
         <div className="p-4 border-t border-gray-100">
-          {/* Logout button - click karte hain to confirmation dialog show hota hai */}
+          {/* Logout button - opens the confirmation dialog when clicked */}
           <button
             onClick={() => setShowLogoutConfirm(true)}
             className={`
@@ -188,7 +198,7 @@ export default function Sidebar({
         <div
           className="fixed top-0 left-0 w-screen h-screen z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center"
           onClick={(e) => {
-            // Backdrop click karte hain to modal close hota hai
+            // Clicking the backdrop (not the dialog itself) closes it
             if (e.target === e.currentTarget) setShowLogoutConfirm(false);
           }}
         >
@@ -240,16 +250,16 @@ export default function Sidebar({
               </div>
             </div> */}
 
-            {/* Modal Buttons - Cancel aur Logout */}
+            {/* Modal buttons - cancel or confirm the sign-out */}
             <div className="grid grid-cols-2 gap-2">
-              {/* Cancel button - Modal ko close karte hain, logout nahi hota */}
+              {/* Cancel button - closes the modal without signing out */}
               <button
                 onClick={() => setShowLogoutConfirm(false)}
                 className="py-2.5 rounded-xl border border-zinc-200 text-[13px] font-medium text-zinc-600 hover:bg-zinc-50 transition"
               >
                 Stay signed in
               </button>
-              {/* Logout button - handleLogout function call karte hain - token remove + login page redirect */}
+              {/* Logout button - calls handleLogout (removes token + redirects to login) */}
               <button
                 onClick={handleLogout}
                 className="py-2.5 rounded-xl bg-black hover:bg-black text-white text-[13px] font-semibold transition flex items-center justify-center gap-1.5"

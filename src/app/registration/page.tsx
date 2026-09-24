@@ -420,6 +420,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+/**
+ * Registrations route — public channel-partner registration form.
+ * Split-panel layout (brand / form). Collects name, email, phone, company and
+ * an optional logo, submits as FormData to the public-register API, and on
+ * success redirects to the SHILP website after a 5-second countdown.
+ */
 export default function ChannelProviderRegistration() {
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -437,11 +443,13 @@ export default function ChannelProviderRegistration() {
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
 
+  /** handleChange — Updates the edited form field and clears its error message. */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: "" });
   };
 
+  /** validate — Checks required fields and formats (email regex, 10-digit phone); returns true when the form is valid. */
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!form.name.trim()) newErrors.name = "Full name is required";
@@ -456,6 +464,11 @@ export default function ChannelProviderRegistration() {
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * handleSubmit — Submits the form (with optional logo) to the public-register
+   * API. On success starts a 5-second countdown then redirects to shilp.co.in;
+   * on error shows the server-provided message.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -470,6 +483,7 @@ export default function ChannelProviderRegistration() {
       formData.append("company", form.company);
       if (logo) formData.append("logo", logo);
 
+      // POST multipart form (fields + optional logo) to the public-register API
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/public-register`,
         { method: "POST", body: formData },
@@ -488,6 +502,7 @@ export default function ChannelProviderRegistration() {
         setMessage(result.message);
         setForm({ name: "", email: "", phone: "", company: "" });
         setLogo(null);
+        // Start a 5-second countdown, then redirect to the SHILP website
         let seconds = 5;
 
         setCountdown(seconds);
@@ -514,6 +529,7 @@ export default function ChannelProviderRegistration() {
     }
   };
 
+  /** inputWrapClass — Returns the input container classes, highlighting errors or the focused field. */
   const inputWrapClass = (field: string) =>
     `flex items-center gap-3 h-11 px-4 rounded-xl border transition-all duration-200 ${
       errors[field]
@@ -523,6 +539,7 @@ export default function ChannelProviderRegistration() {
           : "border-zinc-200 bg-zinc-50"
     }`;
 
+  /** iconColor — Field icon color: red on error, dark when focused, light otherwise. */
   const iconColor = (field: string) =>
     errors[field]
       ? "text-red-400"

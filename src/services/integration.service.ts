@@ -1,9 +1,14 @@
+// integration.service.ts - Manage messaging integrations (e.g. WATI, INTERAKT).
+// Covers listing integrations, checking connection status, and updating their
+// configuration or enabling/disabling them.
+
 import { IntegrationConfig } from "@/types/integration";
 import { api } from "./api";
 
 /**
- * GET INTEGRATIONS - Sab available integrations ki list
- * Output: Integrations with all fields
+ * GET INTEGRATIONS - List of all available integrations.
+ * Calls: GET /integrations
+ * Returns: integrations with all their fields.
  */
 export const getIntegrations = async () => {
   const res = await api.get("/integrations");
@@ -11,9 +16,10 @@ export const getIntegrations = async () => {
 };
 
 /**
- * GET INTEGRATION STATUS - Sab integrations ka connection status check
- * Output: Slug, name, status only (credentials nahi bhejta)
- * Ye safe hai kyunki sensitive data nahi bhejta
+ * GET INTEGRATION STATUS - Connection status of every integration.
+ * Calls: GET /integrations/status
+ * Returns: only slug, name and status (credentials are never included).
+ * Safe because it does not leak sensitive data.
  */
 export const getIntegrationStatus = async () => {
   const res = await api.get("/integrations/status");
@@ -21,9 +27,10 @@ export const getIntegrationStatus = async () => {
 };
 
 /**
- * GET INTEGRATION - Specific integration ki details
- * Input: slug (integration ka unique identifier)
- * Output: Full integration with fields configuration
+ * GET INTEGRATION - Details of one specific integration.
+ * Calls: GET /integrations/:slug
+ * Parameters: slug (the integration's unique identifier)
+ * Returns: the full integration including its fields configuration.
  */
 export const getIntegration = async (slug: string) => {
   const res = await api.get(`/integrations/${slug}`);
@@ -31,10 +38,11 @@ export const getIntegration = async (slug: string) => {
 };
 
 /**
- * UPDATE INTEGRATION CONFIG - Integration ke credentials update karna
- * Input: slug, config (apiUrl, jwtToken, channelNumber etc.)
- * Use: Jab user WATI/INTERAKT account connect karna chahta hai
- * Process: Backend WATI API ko call kar ke verify karta hai
+ * UPDATE INTEGRATION CONFIG - Update an integration's credentials.
+ * Calls: PUT /integrations/:slug/config
+ * Parameters: slug, config (apiUrl, jwtToken, channelNumber, etc.)
+ * Used when an admin wants to connect a WATI/INTERAKT account.
+ * The backend verifies the credentials by calling the WATI API.
  */
 export const updateIntegrationConfig = async (
   slug: string, 
@@ -45,9 +53,10 @@ export const updateIntegrationConfig = async (
 };
 
 /**
- * UPDATE INTEGRATION STATUS - Integration ko enable/disable karna
- * Input: slug, status ("connected" ya "disconnected")
- * Use: Admin integration ko on/off kar sakte hain
+ * UPDATE INTEGRATION STATUS - Enable or disable an integration.
+ * Calls: PATCH /integrations/:slug/status
+ * Parameters: slug, status ("connected" or "disconnected")
+ * Lets an admin turn an integration on or off.
  */
 export const updateIntegrationStatus = async (
   slug: string,

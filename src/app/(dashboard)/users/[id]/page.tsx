@@ -5,6 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import { getUserById } from "@/services/user.service";
 import Image from "next/image";
 
+/**
+ * Route: /users/[id]
+ * View-only page for a single user. Fetches the user by route id and shows
+ * their logo, contact details, company and status with a link to edit.
+ */
 interface User {
   _id: string;
   name: string;
@@ -15,16 +20,23 @@ interface User {
   status: number;
 }
 
+/**
+ * ViewUser - Read-only profile for one user.
+ * Loads the user on mount, renders loading / not-found states, and offers
+ * navigation back to the list or into the edit form.
+ */
 export default function ViewUser() {
-  const { id } = useParams();
+  const { id } = useParams(); // The user id from the route
   const router = useRouter();
 
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null); // The fetched user record
   const [loading, setLoading] = useState(true);
 
+  // Fetch the user by id when the route value changes
   useEffect(() => {
     const fetchUser = async () => {
       try {
+        // Load the user data by id from the API
         const data = await getUserById(id as string);
         setUser(data);
       } catch (err) {
@@ -37,10 +49,12 @@ export default function ViewUser() {
     fetchUser();
   }, [id]);
 
+  // Show a loading placeholder while the request is in flight
   if (loading) {
     return <div className="text-center py-10">Loading...</div>;
   }
 
+  // Handle the case where the user no longer exists
   if (!user) {
     return <div className="text-center py-10 text-red-500">User not found</div>;
   }
